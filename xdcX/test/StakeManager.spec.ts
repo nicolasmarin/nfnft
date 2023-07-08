@@ -9,7 +9,6 @@ describe("Stake Manager Contract", () => {
   let admin: SignerWithAddress;
   let manager: SignerWithAddress;
   let users: SignerWithAddress[];
-  let bcDepositWallet: SignerWithAddress;
   let bot: SignerWithAddress;
   let user: SignerWithAddress;
 
@@ -40,8 +39,7 @@ describe("Stake Manager Contract", () => {
     admin = deployer;
     manager = users[0];
     user = users[1];
-    bcDepositWallet = users[2];
-    bot = users[3];
+    bot = users[2];
 
     xdcX = (await upgrades.deployProxy(
       await ethers.getContractFactory("XdcX"),
@@ -61,7 +59,6 @@ describe("Stake Manager Contract", () => {
         admin.address,
         manager.address,
         tokenHub.address,
-        bcDepositWallet.address,
         bot.address,
       ]
     )) as StakeManager;

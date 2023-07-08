@@ -26,7 +26,6 @@ contract StakeManager is
 
     uint256 public depositsDelegated; // total XDC delegated to validators on Beacon Chain
     uint256 public depositsInContract; // total XDC deposited in contract but not yet transferred to relayer for moving to BC.
-    uint256 public depositsBridgingOut; // total XDC in relayer while transfering XDC
     uint256 public totalXdcXToBurn;
     uint256 public totalClaimableXdc; // total XDC available to be claimed and resides in contract
 
@@ -36,7 +35,6 @@ contract StakeManager is
     uint256 public minUndelegateThreshold;
 
     address private xdcX;
-    address private bcDepositWallet;
     address private tokenHub;
 
     mapping(uint256 => BotDelegateRequest) private uuidToBotDelegateRequestMap;
@@ -63,7 +61,6 @@ contract StakeManager is
      * @param _admin - Address of the admin
      * @param _manager - Address of the manager
      * @param _tokenHub - Address of the manager
-     * @param _bcDepositWallet - Beck32 decoding of Address of deposit Bot Wallet on Beacon Chain with `0x` prefix
      * @param _bot - Address of the Bot
      */
     function initialize(
@@ -71,7 +68,6 @@ contract StakeManager is
         address _admin,
         address _manager,
         address _tokenHub,
-        address _bcDepositWallet,
         address _bot
     ) external override initializer {
         __AccessControl_init();
@@ -82,7 +78,6 @@ contract StakeManager is
                 (_admin != address(0)) &&
                 (_manager != address(0)) &&
                 (_tokenHub != address(0)) &&
-                (_bcDepositWallet != address(0)) &&
                 (_bot != address(0))),
             "zero address provided"
         );
@@ -94,13 +89,11 @@ contract StakeManager is
         manager = _manager;
         xdcX = _xdcX;
         tokenHub = _tokenHub;
-        bcDepositWallet = _bcDepositWallet;
         minDelegateThreshold = 10_000_000 * 1e18;
         minUndelegateThreshold = 1e18;
 
         emit SetManager(_manager);
         emit SetBotRole(_bot);
-        emit SetBCDepositWallet(bcDepositWallet);
         emit SetMinDelegateThreshold(minDelegateThreshold);
         emit SetMinUndelegateThreshold(minUndelegateThreshold);
     }
@@ -379,19 +372,6 @@ contract StakeManager is
         emit RevokeBotRole(_address);
     }
 
-    /// @param _address - Beck32 decoding of Address of deposit Bot Wallet on Beacon Chain with `0x` prefix
-    function setBCDepositWallet(address _address)
-        external
-        override
-        onlyManager
-    {
-        require(bcDepositWallet != _address, "Old address == new address");
-        require(_address != address(0), "zero address provided");
-
-        bcDepositWallet = _address;
-
-        emit SetBCDepositWallet(_address);
-    }
 
     function setMinDelegateThreshold(uint256 _minDelegateThreshold)
         external
@@ -435,7 +415,7 @@ contract StakeManager is
     ////////////////////////////////////////////////////////////
 
     function getTotalPooledXdc() public view override returns (uint256) {
-        return (depositsDelegated + depositsBridgingOut + depositsInContract);
+        return (depositsDelegated + depositsInContract);
     }
 
     function getContracts()
@@ -445,14 +425,12 @@ contract StakeManager is
         returns (
             address _manager,
             address _xdcX,
-            address _tokenHub,
-            address _bcDepositWallet
+            address _tokenHub
         )
     {
         _manager = manager;
         _xdcX = xdcX;
         _tokenHub = tokenHub;
-        _bcDepositWallet = bcDepositWallet;
     }
 
     function getBotDelegateRequest(uint256 _uuid)
@@ -559,7 +537,7 @@ contract StakeManager is
     function _tokenHubTransferOut(uint256 _amount) private {
         bool isTransferred = ITokenHub(tokenHub).transferOut{
             value: (_amount)
-        }(address(0), bcDepositWallet, _amount);
+        }(address(0), address(this), _amount);
 
         require(isTransferred, "TokenHub TransferOut Failed");
         emit TransferOut(_amount);

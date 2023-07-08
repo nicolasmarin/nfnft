@@ -26,7 +26,6 @@ interface IStakeManager {
         address _admin,
         address _manager,
         address _tokenHub,
-        address _bcDepositWallet,
         address _bot
     ) external;
 
@@ -58,8 +57,6 @@ interface IStakeManager {
 
     function revokeBotRole(address _address) external;
 
-    function setBCDepositWallet(address _address) external;
-
     function setMinDelegateThreshold(uint256 _minDelegateThreshold) external;
 
     function setMinUndelegateThreshold(uint256 _minUndelegateThreshold)
@@ -75,8 +72,7 @@ interface IStakeManager {
         returns (
             address _manager,
             address _xdcX,
-            address _tokenHub,
-            address _bcDepositWallet
+            address _tokenHub
         );
 
     function getBotDelegateRequest(uint256 _uuid)
@@ -127,7 +123,6 @@ interface IStakeManager {
     event ProposeManager(address indexed _address);
     event SetBotRole(address indexed _address);
     event RevokeBotRole(address indexed _address);
-    event SetBCDepositWallet(address indexed _address);
     event SetMinDelegateThreshold(uint256 _minDelegateThreshold);
     event SetMinUndelegateThreshold(uint256 _minUndelegateThreshold);
     event SetRedirectAddress(address indexed _address);
