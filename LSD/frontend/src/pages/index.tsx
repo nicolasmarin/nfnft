@@ -10,6 +10,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import StakeManagerABI from '../constants/StakeManager';
 import { ethers } from 'ethers';
 import config from 'next/config';
+import error from 'next/error';
 
 const Index = () => {
   const [tabActive, setTabActive] = useState<string>("Stake");
@@ -63,6 +64,11 @@ const Index = () => {
         functionName: 'convertXdcXToXdc', // Devuelve uint256
         args: [ethers.utils.parseEther(unstakeAmount?unstakeAmount.toString?.():'0')],
        },
+       {
+        ...xdcxContract,
+        functionName: 'allowance', // Devuelve uint256
+        args: [address, stakeManagerAddress],
+       },
     ],
       // args,
       watch: true,
@@ -70,7 +76,7 @@ const Index = () => {
     });
 
 
-  const valueToStake = ethers.utils.parseEther(stakeAmount?stakeAmount.toString?.():'0');
+  const valueToStake = ethers.utils.parseEther(stakeAmount?stakeAmount.toString?.():"0");
 
   const {
     config: depositConfig,
@@ -86,13 +92,39 @@ const Index = () => {
 
   const { data: depositData, error: depositWriteError, isError: depositIsError, write: depositWrite } = useContractWrite(depositConfig);
  
-  const { depositIsLoading, depositIsSuccess } = useWaitForTransaction({
+  const { isLoading: depositIsLoading, isSuccess: depositIsSuccess } = useWaitForTransaction({
     hash: depositData?.hash,
     onSuccess: () => {
       console.log("Success");
       setStakeAmount(0);
     }
-  })
+  });
+
+
+
+
+
+  const valueToUnstake = ethers.utils.parseEther(unstakeAmount?unstakeAmount.toString?.():"0");
+
+  const {
+    config: undepositConfig,
+    error: undepositPrepareError,
+    isError: undepositIsPrepareError,
+  } = usePrepareContractWrite({
+    ...stakeManagerContract,
+    functionName: 'claimWithdraw',
+    args: [valueToUnstake],
+  });
+
+  const { data: undepositData, error: undepositWriteError, isError: undepositIsError, write: undepositWrite } = useContractWrite(undepositConfig);
+ 
+  const { isLoading: undepositIsLoading, isSuccess: undepositIsSuccess } = useWaitForTransaction({
+    hash: undepositData?.hash,
+    onSuccess: () => {
+      console.log("Success");
+      setUnstakeAmount(0);
+    }
+  })  
 
 
   return (
@@ -112,7 +144,7 @@ const Index = () => {
             </div>
             <div>
               <div className="text-xl font-bold">XDC</div>
-              <div className="text-sm font-normal">Stake XDC and use XDCX while earning staking rewards.</div>
+              <div className="text-sm font-normal">Stake XDC and use xdcX while earning staking rewards.</div>
             </div>
           </div>
         </div>
@@ -137,10 +169,10 @@ const Index = () => {
             </div>
             <div className="w-full md:w-1/3 text-gray-800">
               <div className="font-bold text-xl">
-                XDC/XDCX Exchange Rate
+                XDC/xdcX Exchange Rate
               </div>
               <div className="text-sm">
-                {pooledData && pooledData[1] ? ethers.utils.formatEther(pooledData[1]) + " XDCX":"loading... "}
+                {pooledData && pooledData[1] ? ethers.utils.formatEther(pooledData[1]) + " xdcX":"loading... "}
               </div>
             </div>
           </div>
@@ -172,7 +204,7 @@ const Index = () => {
                   My XDC : {balanceData ? balanceData.formatted + " XDC" : "loading... "}
                 </div>
                 <div className="text-right">
-                  My XDCX : {pooledData && pooledData[2] ? ethers.utils.formatEther(pooledData[2]) : "loading... "}
+                  My xdcX : {pooledData && pooledData[2] ? ethers.utils.formatEther(pooledData[2]) : "loading... "}
                 </div>
               </div>
 
@@ -191,8 +223,8 @@ const Index = () => {
 
               <div className="flex justify-between text-base font-normal pt-10">
                 <div className="flex gap-3">
-                  You will get: <Image src={"/assets/images/XDCX.png"} width={24} height={24} alt="XDCX" />
-                  {pooledData && pooledData[3] ? ethers.utils.formatEther(pooledData[3]) + " XDCX" : "loading... "}
+                  You will get: <Image src={"/assets/images/XDCX.png"} width={24} height={24} alt="xdcX" />
+                  {pooledData && pooledData[3] ? ethers.utils.formatEther(pooledData[3]) + " xdcX" : "loading... "}
                 </div>
               </div>
                 
@@ -203,7 +235,15 @@ const Index = () => {
                       if (depositWrite) depositWrite?.();
                     }}
                   >
-                    Stake
+                    {
+                      (() => {
+                        if (depositIsLoading) return "Staking...";
+                        if (depositIsSuccess) return "Staked!";
+                        if (depositWrite) return "Stake";
+                        if (stakeAmount === 0) return "Enter an amount to stake";
+                        return "loading...";
+                      })()
+                    }
                   </div>
                 ) : (
                   <ConnectButton.Custom>
@@ -301,19 +341,31 @@ const Index = () => {
             <div className="pb-10">
               <div className="flex justify-between text-sm font-normal pb-10">
                 <div className="">
-                Available Balance: {pooledData && pooledData[2] ? ethers.utils.formatEther(pooledData[2]) : "loading... "}
+                Available Balance: {pooledData && pooledData[2] ? ethers.utils.formatEther(pooledData[2]) : "loading... "}<br />
+                Allowance: {pooledData && pooledData[5] ? ethers.utils.formatEther(pooledData[5]) : "loading... "}
                 </div>
               </div>
 
               <div className="relative">
                 <div className="absolute left-0 inset-y-0 flex items-center pl-3 opacity-8">
-                  <Image src={"/assets/images/XDCX.png"} width={40} height={40} alt="XDCX" />
+                  <Image src={"/assets/images/XDCX.png"} width={40} height={40} alt="xdcX" />
                 </div>
                 <input 
                   type="number" step="any" name="minting-fee" placeholder="0.1" min="0" max="999999999999999999999999999999" className="w-full p-2 pl-16 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500     disabled:text-gray-500"
                   value={unstakeAmount}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setUnstakeAmount(parseFloat(e?.target?.value));
+                    let value = 0;
+                    try {
+                      value = parseFloat(e?.target?.value);
+                      const valueToBN = ethers.utils.parseEther(value.toString());
+                      if (pooledData && pooledData?.[2] && pooledData?.[2]?.lt(valueToBN)) {
+                        setUnstakeAmount(ethers.utils.formatEther(pooledData[2]).toString());
+                        return;
+                      }
+                    } catch (error) {
+                      console.log(error);
+                    }
+                    setUnstakeAmount(value);
                   }}
                 />
               </div>
@@ -328,8 +380,20 @@ const Index = () => {
 
               <div className="w-full pt-10">
                 {isConnected ? (
-                  <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center">
-                    Unstake
+                  <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
+                    onClick={() => {
+                      if (undepositWrite) undepositWrite?.();
+                    }}
+                  >
+                    {
+                      (() => {
+                        if (undepositIsLoading) return "Unstaking...";
+                        if (undepositIsSuccess) return "Unstaked!";
+                        if (undepositWrite) return "Unstake";
+                        if (unstakeAmount === 0) return "Enter an amount to unstake";
+                        return "loading...";
+                      })()
+                    }
                   </div>
                 ) : (
                   <ConnectButton.Custom>
