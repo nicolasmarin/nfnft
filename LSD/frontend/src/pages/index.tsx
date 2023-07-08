@@ -164,7 +164,7 @@ const Index = () => {
                 APY
               </div>
               <div className="text-sm">
-                7%
+                8-10%
               </div>
             </div>
             <div className="w-full md:w-1/3 text-gray-800">
