@@ -21,6 +21,7 @@
   "dependencies": {
     "@next/eslint-plugin-next": "^13.4.9",
     "@rainbow-me/rainbowkit": "0.12.14",
+    "@tippyjs/react": "^4.2.6",
     "@vercel/postgres": "^0.4.0",
     "aws-cdk": "^2.87.0",
     "aws-cdk-lib": "^2.87.0",
