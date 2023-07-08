@@ -25,23 +25,13 @@ contract StakeManager is
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint256 public depositsDelegated; // total XDC delegated to validators on Beacon Chain
-    uint256 public totalXdcXToBurn;
-    uint256 public totalClaimableXdc; // total XDC available to be claimed and resides in contract
 
     uint256 public nextDelegateUUID;
-    uint256 public nextUndelegateUUID;
     uint256 public minDelegateThreshold;
-    uint256 public minUndelegateThreshold;
 
     address private xdcX;
     address private tokenHub;
 
-    mapping(uint256 => BotDelegateRequest) private uuidToBotDelegateRequestMap;
-    mapping(uint256 => BotUndelegateRequest)
-        private uuidToBotUndelegateRequestMap;
-    mapping(address => WithdrawalRequest[]) private userWithdrawalRequests;
-
-    uint256 public constant TEN_DECIMALS = 1e10;
     bytes32 public constant BOT = keccak256("BOT");
 
     address private manager;
@@ -89,12 +79,10 @@ contract StakeManager is
         xdcX = _xdcX;
         tokenHub = _tokenHub;
         minDelegateThreshold = 10_000_000 * 1e18;
-        minUndelegateThreshold = 1e18;
 
         emit SetManager(_manager);
         emit SetBotRole(_bot);
         emit SetMinDelegateThreshold(minDelegateThreshold);
-        emit SetMinUndelegateThreshold(minUndelegateThreshold);
     }
 
 
@@ -117,7 +105,7 @@ contract StakeManager is
     }
 
     function depositsInContract() public view returns (uint256) {
-        return address(this).balance - totalClaimableXdc;
+        return address(this).balance;
     }
 
     /**
@@ -137,7 +125,7 @@ contract StakeManager is
 
         _uuid = nextDelegateUUID++; // post-increment : assigns the current value first and then increments
 
-        // We require the bot to have at least minDelegateThreshold amount of XDC
+        // We require the bot to have at least minDelegateThreshold amount of XDC (10 millions XDC)
         // But only for the first delegation. After that, the bot can delegate any amount
         if (_uuid == 0) {
             require(_amount >= minDelegateThreshold, "Insufficient Deposit Amount");
@@ -162,26 +150,20 @@ contract StakeManager is
      * @param _amountInXdcX - Amount of XdcX to swap for withdraw
      * @notice User must have approved this contract to spend XdcX
      */
-    function requestWithdraw(uint256 _amountInXdcX)
+    function claimWithdraw(uint256 _amountInXdcX)
         external
         override
         whenNotPaused
     {
         require(_amountInXdcX > 0, "Invalid Amount");
+        require(depositsDelegated > 0, "No delegation yet");
 
-        totalXdcXToBurn += _amountInXdcX;
-        uint256 totalXdcToWithdraw = convertXdcXToXdc(totalXdcXToBurn);
+        // We can only undelegate if the amount of XDC to be withdrawn is less than 10 millions XDC
+        uint256 maxToUndelegate = depositsDelegated - minDelegateThreshold;
+        uint256 totalXdcToWithdraw = convertXdcXToXdc(_amountInXdcX);
         require(
-            totalXdcToWithdraw <= depositsDelegated,
+            totalXdcToWithdraw <= maxToUndelegate,
             "Not enough XDC to withdraw"
-        );
-
-        userWithdrawalRequests[msg.sender].push(
-            WithdrawalRequest({
-                uuid: nextUndelegateUUID,
-                amountInXdcX: _amountInXdcX,
-                startTime: block.timestamp
-            })
         );
 
         IERC20Upgradeable(xdcX).safeTransferFrom(
@@ -190,123 +172,12 @@ contract StakeManager is
             _amountInXdcX
         );
         emit RequestWithdraw(msg.sender, _amountInXdcX);
-    }
 
-    function claimWithdraw(uint256 _idx) external override whenNotPaused {
-        address user = msg.sender;
-        WithdrawalRequest[] storage userRequests = userWithdrawalRequests[user];
+        IXdcX(xdcX).burn(address(this), _amountInXdcX);
 
-        require(_idx < userRequests.length, "Invalid index");
-
-        WithdrawalRequest storage withdrawRequest = userRequests[_idx];
-        uint256 uuid = withdrawRequest.uuid;
-        uint256 amountInXdcX = withdrawRequest.amountInXdcX;
-
-        BotUndelegateRequest
-            storage botUndelegateRequest = uuidToBotUndelegateRequestMap[uuid];
-        require(botUndelegateRequest.endTime != 0, "Not able to claim yet");
-        userRequests[_idx] = userRequests[userRequests.length - 1];
-        userRequests.pop();
-
-        uint256 totalXdcToWithdraw_ = botUndelegateRequest.amount;
-        uint256 totalXdcXToBurn_ = botUndelegateRequest.amountInXdcX;
-        uint256 amount = (totalXdcToWithdraw_ * amountInXdcX) /
-            totalXdcXToBurn_;
-
-        totalClaimableXdc -= amount;
-        AddressUpgradeable.sendValue(payable(user), amount);
+        AddressUpgradeable.sendValue(payable(msg.sender), totalXdcToWithdraw);
 
         emit ClaimWithdrawal(user, _idx, amount);
-    }
-
-    /**
-     * @dev Bot uses this function to get amount of XDC to withdraw
-     * @return _uuid - unique id against which this Undelegation event was logged
-     * @return _amount - Amount of funds required to Unstake
-     * @notice Use `getBotUndelegateRequest` function to get more details of the logged data
-     */
-    function startUndelegation()
-        external
-        override
-        whenNotPaused
-        onlyRole(BOT)
-        returns (uint256 _uuid, uint256 _amount)
-    {
-        _uuid = nextUndelegateUUID++; // post-increment : assigns the current value first and then increments
-        uint256 totalXdcXToBurn_ = totalXdcXToBurn; // To avoid Reentrancy attack
-        _amount = convertXdcXToXdc(totalXdcXToBurn_);
-        _amount -= _amount % TEN_DECIMALS;
-
-        require(
-            _amount >= minUndelegateThreshold,
-            "Insufficient Withdraw Amount"
-        );
-
-        uuidToBotUndelegateRequestMap[_uuid] = BotUndelegateRequest({
-            startTime: 0,
-            endTime: 0,
-            amount: _amount,
-            amountInXdcX: totalXdcXToBurn_
-        });
-
-        depositsDelegated -= _amount;
-        totalXdcXToBurn = 0;
-
-        IXdcX(xdcX).burn(address(this), totalXdcXToBurn_);
-    }
-
-    /**
-     * @dev Allows Bot to communicate regarding start of Undelegation Event at Beacon Chain
-     * @param _uuid - unique id against which this Undelegation event was logged
-     */
-    function undelegationStarted(uint256 _uuid)
-        external
-        override
-        whenNotPaused
-        onlyRole(BOT)
-    {
-        BotUndelegateRequest
-            storage botUndelegateRequest = uuidToBotUndelegateRequestMap[_uuid];
-        require(
-            (botUndelegateRequest.amount > 0) &&
-                (botUndelegateRequest.startTime == 0),
-            "Invalid UUID"
-        );
-
-        botUndelegateRequest.startTime = block.timestamp;
-    }
-
-    /**
-     * @dev Bot uses this function to send unstaked funds to this contract and
-     * communicate regarding completion of Undelegation Event
-     * @param _uuid - unique id against which this Undelegation event was logged
-     * @notice Use `getBotUndelegateRequest` function to get more details of the logged data
-     * @notice send exact amount of XDC
-     */
-    function completeUndelegation(uint256 _uuid)
-        external
-        payable
-        override
-        whenNotPaused
-        onlyRole(BOT)
-    {
-        BotUndelegateRequest
-            storage botUndelegateRequest = uuidToBotUndelegateRequestMap[_uuid];
-        require(
-            (botUndelegateRequest.startTime != 0) &&
-                (botUndelegateRequest.endTime == 0),
-            "Invalid UUID"
-        );
-
-        uint256 amount = msg.value;
-        require(
-            amount == botUndelegateRequest.amount,
-            "Send Exact Amount of Fund"
-        );
-        botUndelegateRequest.endTime = block.timestamp;
-        totalClaimableXdc += botUndelegateRequest.amount;
-
-        emit Undelegate(_uuid, amount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -364,16 +235,6 @@ contract StakeManager is
         emit SetMinDelegateThreshold(_minDelegateThreshold);
     }
 
-    function setMinUndelegateThreshold(uint256 _minUndelegateThreshold)
-        external
-        override
-        onlyManager
-    {
-        require(_minUndelegateThreshold > 0, "Invalid Threshold");
-        minUndelegateThreshold = _minUndelegateThreshold;
-
-        emit SetMinUndelegateThreshold(_minUndelegateThreshold);
-    }
 
     function setRedirectAddress(address _address)
         external
@@ -411,78 +272,6 @@ contract StakeManager is
         _manager = manager;
         _xdcX = xdcX;
         _tokenHub = tokenHub;
-    }
-
-    function getBotDelegateRequest(uint256 _uuid)
-        external
-        view
-        override
-        returns (BotDelegateRequest memory)
-    {
-        return uuidToBotDelegateRequestMap[_uuid];
-    }
-
-    function getBotUndelegateRequest(uint256 _uuid)
-        external
-        view
-        override
-        returns (BotUndelegateRequest memory)
-    {
-        return uuidToBotUndelegateRequestMap[_uuid];
-    }
-
-    /**
-     * @dev Retrieves all withdrawal requests initiated by the given address
-     * @param _address - Address of an user
-     * @return userWithdrawalRequests array of user withdrawal requests
-     */
-    function getUserWithdrawalRequests(address _address)
-        external
-        view
-        override
-        returns (WithdrawalRequest[] memory)
-    {
-        return userWithdrawalRequests[_address];
-    }
-
-    /**
-     * @dev Checks if the withdrawRequest is ready to claim
-     * @param _user - Address of the user who raised WithdrawRequest
-     * @param _idx - index of request in UserWithdrawls Array
-     * @return _isClaimable - if the withdraw is ready to claim yet
-     * @return _amount - Amount of XDC user would receive on withdraw claim
-     * @notice Use `getUserWithdrawalRequests` to get the userWithdrawlRequests Array
-     */
-    function getUserRequestStatus(address _user, uint256 _idx)
-        external
-        view
-        override
-        returns (bool _isClaimable, uint256 _amount)
-    {
-        WithdrawalRequest[] storage userRequests = userWithdrawalRequests[
-            _user
-        ];
-
-        require(_idx < userRequests.length, "Invalid index");
-
-        WithdrawalRequest storage withdrawRequest = userRequests[_idx];
-        uint256 uuid = withdrawRequest.uuid;
-        uint256 amountInXdcX = withdrawRequest.amountInXdcX;
-
-        BotUndelegateRequest
-            storage botUndelegateRequest = uuidToBotUndelegateRequestMap[uuid];
-
-        // bot has triggered startUndelegation
-        if (botUndelegateRequest.amount > 0) {
-            uint256 totalXdcToWithdraw_ = botUndelegateRequest.amount;
-            uint256 totalXdcXToBurn_ = botUndelegateRequest.amountInXdcX;
-            _amount = (totalXdcToWithdraw_ * amountInXdcX) / totalXdcXToBurn_;
-        }
-        // bot has not triggered startUndelegation yet
-        else {
-            _amount = convertXdcXToXdc(amountInXdcX);
-        }
-        _isClaimable = (botUndelegateRequest.endTime != 0);
     }
 
     function getXdcXWithdrawLimit()

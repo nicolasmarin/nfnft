@@ -35,9 +35,7 @@ interface IStakeManager {
         external
         returns (uint256 _uuid, uint256 _amount);
 
-    function requestWithdraw(uint256 _amountInXdcX) external;
-
-    function claimWithdraw(uint256 _idx) external;
+    function claimWithdraw(uint256 _amountInXdcX) external;
 
     function startUndelegation()
         external
