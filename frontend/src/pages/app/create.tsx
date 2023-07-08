@@ -12,6 +12,7 @@ import { ChangeEvent, useState } from 'react';
 import { ethers } from 'ethers';
 import factoryABI from '../../constants/factoryABI';
 import NFERC721 from '../../constants/NFERC721';
+import { gnosisChiado, scrollTestnet } from 'wagmi/dist/chains';
 
 const Index = () => {
   const [projectName, setProjectName] = useState<string>("");
@@ -32,9 +33,21 @@ const Index = () => {
   const { address: wallet, isConnected } = useAccount();
 
   
-  const factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
-  let ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS || "";
-
+  let factoryContractAddress;
+  let ercPaymentAddress;
+  if (activeChain?.id === gnosisChiado.id) {
+    ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_CHIADO || "";
+    factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_CHIADO || "";
+  } else if (activeChain?.id === xdcCustom.id) {
+    ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_XDC || "";
+    factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_XDC || "";
+  } else if (activeChain?.id === xdcTestnetCustom.id) {
+    ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_XDC_TESTNET || "";
+    factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_XDC_TESTNET || "";
+  } else if (activeChain?.id === scrollTestnet.id) {
+    ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_SCROLL || "";
+    factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_SCROLL || "";
+  }
   const { data: expectedAddress } = useContractRead({
     abi: factoryABI,
     address: factoryContractAddress,

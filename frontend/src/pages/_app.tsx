@@ -9,9 +9,9 @@ import {
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import {
   xdc,
-  gnosis,
   scrollTestnet,
   xdcTestnet,
+  gnosisChiado,
 } from 'wagmi/chains';
 import { AppConfig } from '@/utils/AppConfig';
 
@@ -65,8 +65,8 @@ export const chains = [];
 if (chainId === 50 || chainId === 51) {
   chains.push(xdcCustom);
   chains.push(xdcTestnetCustom);
-} else if (chainId === gnosis.id) {
-  chains.push(gnosis);
+} else if (chainId === gnosisChiado.id) {
+  chains.push(gnosisChiado);
 } else if (chainId === scrollTestnet.id) {
   chains.push(scrollTestnet);
 }
