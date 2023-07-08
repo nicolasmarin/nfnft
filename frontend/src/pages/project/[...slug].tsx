@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import EarningCalculator from '@/components/EarningCalculator';
 import Modal from 'react-modal';
 import NFERC721 from '@/constants/NFERC721';
+import TokenNFT from '@/components/TokenNFT';
 
 type Project = {
   wallet: string
@@ -47,6 +48,8 @@ const Index = ({
   const [modalTokensOwnedIsOpen, setModalTokensOwnedIsOpen] = useState<boolean>(false);
   const [mintInvest, setMintInvest] = useState<number>(0);
   const [tokensOwned, setTokensOwned] = useState<TokensOwned>();
+
+  console.log("tokensOwned", tokensOwned)
 
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
@@ -616,13 +619,21 @@ const Index = ({
                   key={token.id.toString()}
                   className="text-center border hover:border-black p-2 rounded-xl cursor-pointer"
                 >
-                  <Image width={300} height={300} alt={project.projectname} className="rounded-xl mt-10 mx-auto" src={project.artworkurl} />
-                  {project.projectname} #{token.id.toString()}
+                  <TokenNFT
+                    projectName={project.projectname}
+                    tokenId={token.id?.toString()}
+                    chainId={activeChain?.id}
+                    contractAddress={project.contractaddress}
+                    artworkURL={project.artworkurl}
+                    isOwner={true}                  
+                  />
                 </div>
               ))}
           </div>
         </div>
       </Modal>
+
+      
     </MintingPage>
   );
 };
