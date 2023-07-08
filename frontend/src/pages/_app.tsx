@@ -58,18 +58,20 @@ const xdcTestnetCustom = {
   },
 };
 
-const chainId: Number = process.env.NEXT_PUBLIC_PLATFORM_CHAINID ? parseInt(process.env.NEXT_PUBLIC_PLATFORM_CHAINID) : 1;
 
-export const chains = [];
+const gnosisChiadoCustom = {
+  ...gnosisChiado,
+  iconUrl: 'https://avatars.githubusercontent.com/u/92709226?s=280&v=4',
+  iconBackground: '#fff',
+};
 
-if (chainId === 50 || chainId === 51) {
-  chains.push(xdcCustom);
-  chains.push(xdcTestnetCustom);
-} else if (chainId === gnosisChiado.id) {
-  chains.push(gnosisChiado);
-} else if (chainId === scrollTestnet.id) {
-  chains.push(scrollTestnet);
-}
+const scrollTestnetCustom = {
+  ...scrollTestnet,
+  iconUrl: 'https://camo.githubusercontent.com/280fe40be879abe061985bf1add4c68f536e451b53d0db68d5f31d716edd74c3/687474703a2f2f692e696d6775722e636f6d2f486179674179502e706e67',
+  iconBackground: '#fff',
+};
+
+export const chains = [xdcCustom, xdcTestnetCustom, gnosisChiadoCustom, scrollTestnetCustom];
 
 const { connectors } = getDefaultWallets({
   appName: AppConfig.title,
