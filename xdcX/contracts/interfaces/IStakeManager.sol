@@ -31,11 +31,9 @@ interface IStakeManager {
 
     function deposit() external payable;
 
-    function startDelegation()
+    function delegateXdc()
         external
         returns (uint256 _uuid, uint256 _amount);
-
-    function addRestakingRewards(uint256 _id, uint256 _amount) external;
 
     function requestWithdraw(uint256 _amountInXdcX) external;
 
@@ -99,8 +97,6 @@ interface IStakeManager {
         external
         view
         returns (uint256 _xdcXWithdrawLimit);
-
-    function getExtraXdcInContract() external view returns (uint256 _extraXdc);
 
     function convertXdcToXdcX(uint256 _amount) external view returns (uint256);
 

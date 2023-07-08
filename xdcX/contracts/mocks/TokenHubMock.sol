@@ -7,7 +7,6 @@ contract TokenHubMock is ITokenHub {
     uint256 public constant TEN_DECIMALS = 1e10;
 
     function transferOut(
-        address /*contractAddr*/,
         address /*recipient*/,
         uint256 /*amount*/
     ) external payable override returns (bool) {

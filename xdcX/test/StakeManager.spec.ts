@@ -125,17 +125,13 @@ describe("Stake Manager Contract", () => {
         bStakeManager.addRestakingRewards(0, amount)
       ).to.be.revertedWith("No funds delegated");
 
-      await bStakeManager.startDelegation({ value: relayFee });
-      await expect(
-        bStakeManager.addRestakingRewards(0, amount)
-      ).to.be.revertedWith("No funds delegated");
+      await bStakeManager.delegateXdc({ value: relayFee });
     });
 
     it("rewardsId should be unique", async () => {
       const amount = ethers.utils.parseEther("1.1");
       await uStakeManager.deposit({ value: amount });
-      await bStakeManager.startDelegation({ value: relayFee });
-      await bStakeManager.completeDelegation(0);
+      await bStakeManager.delegateXdc({ value: relayFee });
 
       await bStakeManager.addRestakingRewards(0, amount);
       await expect(
@@ -149,8 +145,7 @@ describe("Stake Manager Contract", () => {
     it("successful adding of rewards", async () => {
       const amount = ethers.utils.parseEther("1.1");
       await uStakeManager.deposit({ value: amount });
-      await bStakeManager.startDelegation({ value: relayFee });
-      await bStakeManager.completeDelegation(0);
+      await bStakeManager.delegateXdc({ value: relayFee });
 
       expect(bStakeManager.addRestakingRewards(0, amount))
         .emit(dStakeManager, "Redelegate")

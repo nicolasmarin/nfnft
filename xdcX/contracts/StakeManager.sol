@@ -25,7 +25,6 @@ contract StakeManager is
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     uint256 public depositsDelegated; // total XDC delegated to validators on Beacon Chain
-    uint256 public depositsInContract; // total XDC deposited in contract but not yet transferred to relayer for moving to BC.
     uint256 public totalXdcXToBurn;
     uint256 public totalClaimableXdc; // total XDC available to be claimed and resides in contract
 
@@ -98,6 +97,7 @@ contract StakeManager is
         emit SetMinUndelegateThreshold(minUndelegateThreshold);
     }
 
+
     ////////////////////////////////////////////////////////////
     /////                                                    ///
     /////              ***Deposit Flow***                    ///
@@ -113,9 +113,11 @@ contract StakeManager is
 
         uint256 xdcXToMint = convertXdcToXdcX(amount);
 
-        depositsInContract += amount;
-
         IXdcX(xdcX).mint(msg.sender, xdcXToMint);
+    }
+
+    function depositsInContract() public view returns (uint256) {
+        return address(this).balance - totalClaimableXdc;
     }
 
     /**
@@ -124,14 +126,14 @@ contract StakeManager is
      * @return _amount - Amount of funds transferred for staking
      * @notice Use `getBotDelegateRequest` function to get more details of the logged data
      */
-    function startDelegation()
+    function delegateXdc()
         external
         override
         whenNotPaused
         onlyRole(BOT)
         returns (uint256 _uuid, uint256 _amount)
     {
-        _amount = depositsInContract - (depositsInContract % TEN_DECIMALS);
+        _amount = depositsInContract();
 
         _uuid = nextDelegateUUID++; // post-increment : assigns the current value first and then increments
 
@@ -141,34 +143,12 @@ contract StakeManager is
             require(_amount >= minDelegateThreshold, "Insufficient Deposit Amount");
         }
         
-        depositsInContract -= _amount;
         depositsDelegated += _amount;
 
         // sends funds to BC
         _tokenHubTransferOut(_amount);
 
         emit Delegate(_uuid, _amount);
-    }
-
-
-    /**
-     * @dev Allows bot to update the contract regarding the rewards
-     * @param _amount - Amount of reward
-     */
-    function addRestakingRewards(uint256 _id, uint256 _amount)
-        external
-        override
-        whenNotPaused
-        onlyRole(BOT)
-    {
-        require(_amount > 0, "No reward");
-        require(depositsDelegated > 0, "No funds delegated");
-        require(!rewardsIdUsed[_id], "Rewards ID already Used");
-
-        depositsDelegated += _amount;
-        rewardsIdUsed[_id] = true;
-
-        emit Redelegate(_id, _amount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -415,7 +395,7 @@ contract StakeManager is
     ////////////////////////////////////////////////////////////
 
     function getTotalPooledXdc() public view override returns (uint256) {
-        return (depositsDelegated + depositsInContract);
+        return (depositsDelegated + depositsInContract());
     }
 
     function getContracts()
@@ -516,18 +496,6 @@ contract StakeManager is
             totalXdcXToBurn;
     }
 
-    function getExtraXdcInContract()
-        public
-        view
-        override
-        returns (uint256 _extraXdc)
-    {
-        _extraXdc =
-            address(this).balance -
-            depositsInContract -
-            totalClaimableXdc;
-    }
-
     ////////////////////////////////////////////////////////////
     /////                                                    ///
     /////            ***Helpers & Utilities***               ///
@@ -537,7 +505,7 @@ contract StakeManager is
     function _tokenHubTransferOut(uint256 _amount) private {
         bool isTransferred = ITokenHub(tokenHub).transferOut{
             value: (_amount)
-        }(address(0), address(this), _amount);
+        }(address(this), _amount);
 
         require(isTransferred, "TokenHub TransferOut Failed");
         emit TransferOut(_amount);

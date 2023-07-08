@@ -5,7 +5,7 @@ const REWARD_DELAY_HOURS = 24;
 const REWARD_CHANGE_BPS = 50; // 0 - 10_000
 const TOTAL_BPS = 10000;
 
-const START_DELEGATION_FN = "function startDelegation()";
+const START_DELEGATION_FN = "function delegateXdc()";
 const START_DELEGATION_DELAY = 36;
 
 const COMPLETE_DELEGATION_FN = "function completeDelegation(uint256 _uuid)";

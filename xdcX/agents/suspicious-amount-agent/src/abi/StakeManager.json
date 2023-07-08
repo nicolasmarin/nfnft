@@ -1105,7 +1105,7 @@
     },
     {
       "inputs": [],
-      "name": "startDelegation",
+      "name": "delegateXdc",
       "outputs": [
         {
           "internalType": "uint256",
