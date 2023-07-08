@@ -11,8 +11,12 @@ import Tooltip from '@/components/Tooltip';
 import { ChangeEvent, useState } from 'react';
 import { ethers } from 'ethers';
 import factoryABI from '../../constants/factoryABI';
-import NFERC721 from '../../constants/NFERC721';
-import { gnosisChiado, scrollTestnet } from 'wagmi/dist/chains';
+import {
+  xdc,
+  scrollTestnet,
+  xdcTestnet,
+  gnosisChiado,
+} from 'wagmi/chains';
 
 const Index = () => {
   const [projectName, setProjectName] = useState<string>("");
@@ -38,10 +42,10 @@ const Index = () => {
   if (activeChain?.id === gnosisChiado.id) {
     ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_CHIADO || "";
     factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_CHIADO || "";
-  } else if (activeChain?.id === xdcCustom.id) {
+  } else if (activeChain?.id === xdc.id) {
     ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_XDC || "";
     factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_XDC || "";
-  } else if (activeChain?.id === xdcTestnetCustom.id) {
+  } else if (activeChain?.id === xdcTestnet.id) {
     ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_XDC_TESTNET || "";
     factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_XDC_TESTNET || "";
   } else if (activeChain?.id === scrollTestnet.id) {
