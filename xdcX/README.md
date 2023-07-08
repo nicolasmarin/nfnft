@@ -10,6 +10,8 @@ npx hardhat clean
 To deploy contracts, run:
 
 ```bash
+npx hardhat deployTokenHubMock --network <network>
+
 npx hardhat deployXdcXProxy <admin> --network <network>
 npx hardhat upgradeXdcXProxy <proxyAddress> --network <network>
 npx hardhat deployXdcXImpl --network <network>

@@ -1,25 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/Address.sol";
 import {ITokenHub} from "../interfaces/ITokenHub.sol";
 
 contract TokenHubMock is ITokenHub {
-    uint256 public constant TEN_DECIMALS = 1e10;
 
     function transferOut(
         address /*recipient*/,
         uint256 /*amount*/
     ) external payable override returns (bool) {
-        require(
-            msg.value % TEN_DECIMALS == 0,
-            "invalid received XDC amount: precision loss in amount conversion"
-        );
         return true;
     }
 
     function undelegate(
-        uint256 /*amount*/
-    ) external pure override returns (bool) {
+        uint256 amount
+    ) external override returns (bool) {
+        Address.sendValue(payable(msg.sender), amount);
         return true;
     }
 

@@ -21,6 +21,12 @@ import {
   GAS_PRICE,
 } from "./environment";
 
+task("deployTokenHubMock", "Deploy TokenHubMock Implementation only").setAction(
+  async (args, hre: HardhatRuntimeEnvironment) => {
+    await deployDirect(hre, "TokenHubMock");
+  }
+);
+
 task("deployXdcXProxy", "Deploy XdcX Proxy only")
   .addPositionalParam("admin")
   .setAction(async ({ admin }, hre: HardhatRuntimeEnvironment) => {

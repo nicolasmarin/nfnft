@@ -158,17 +158,23 @@ contract StakeManager is
         whenNotPaused
     {
         require(_amountInXdcX > 0, "Invalid Amount");
-        require(depositsDelegated > 0, "No delegation yet");
+        require(depositsDelegated > 0 || depositsInContract() > 0, "No delegation yet");
 
         // We can only undelegate if the amount of XDC to be withdrawn is less than 10 millions XDC
-        uint256 maxToUndelegate = depositsDelegated - minDelegateThreshold;
+        uint256 withdrawLimit = getXdcXWithdrawLimit();
         uint256 totalXdcToWithdraw = convertXdcXToXdc(_amountInXdcX);
         require(
-            totalXdcToWithdraw <= maxToUndelegate,
+            totalXdcToWithdraw <= withdrawLimit,
             "Not enough XDC to withdraw"
         );
 
-        _tokenHubUndelegate(totalXdcToWithdraw);
+        if (depositsDelegated == 0) {
+            // If there is no delegation, we can directly send the funds to the user
+            assert(depositsInContract() >= totalXdcToWithdraw);
+        } else {
+            // If there is delegation, we need to undelegate the funds first
+            _tokenHubUndelegate(totalXdcToWithdraw);
+        }
 
         IERC20Upgradeable(xdcX).safeTransferFrom(
             msg.sender,
@@ -264,13 +270,13 @@ contract StakeManager is
     }
 
     function getXdcXWithdrawLimit()
-        external
+        public
         view
         override
         returns (uint256 _xdcXWithdrawLimit)
     {
         if (depositsDelegated == 0) {
-            return 0;
+            return depositsInContract();
         }
 
         // We can only undelegate if the amount of XDC to be withdrawn is less than 10 millions XDC
