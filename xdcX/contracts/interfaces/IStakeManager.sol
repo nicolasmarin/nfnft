@@ -37,14 +37,6 @@ interface IStakeManager {
 
     function claimWithdraw(uint256 _amountInXdcX) external;
 
-    function startUndelegation()
-        external
-        returns (uint256 _uuid, uint256 _amount);
-
-    function undelegationStarted(uint256 _uuid) external;
-
-    function completeUndelegation(uint256 _uuid) external payable;
-
     function proposeNewManager(address _address) external;
 
     function acceptNewManager() external;
@@ -54,9 +46,6 @@ interface IStakeManager {
     function revokeBotRole(address _address) external;
 
     function setMinDelegateThreshold(uint256 _minDelegateThreshold) external;
-
-    function setMinUndelegateThreshold(uint256 _minUndelegateThreshold)
-        external;
 
     function setRedirectAddress(address _address) external;
 
@@ -70,26 +59,6 @@ interface IStakeManager {
             address _xdcX,
             address _tokenHub
         );
-
-    function getBotDelegateRequest(uint256 _uuid)
-        external
-        view
-        returns (BotDelegateRequest memory);
-
-    function getBotUndelegateRequest(uint256 _uuid)
-        external
-        view
-        returns (BotUndelegateRequest memory);
-
-    function getUserWithdrawalRequests(address _address)
-        external
-        view
-        returns (WithdrawalRequest[] memory);
-
-    function getUserRequestStatus(address _user, uint256 _idx)
-        external
-        view
-        returns (bool _isClaimable, uint256 _amount);
 
     function getXdcXWithdrawLimit()
         external
@@ -106,11 +75,6 @@ interface IStakeManager {
     event Delegate(uint256 _uuid, uint256 _amount);
     event TransferOut(uint256 _amount);
     event RequestWithdraw(address indexed _account, uint256 _amountInXdcX);
-    event ClaimWithdrawal(
-        address indexed _account,
-        uint256 _idx,
-        uint256 _amount
-    );
     event Undelegate(uint256 _uuid, uint256 _amount);
     event Redelegate(uint256 _rewardsId, uint256 _amount);
     event SetManager(address indexed _address);
@@ -120,4 +84,10 @@ interface IStakeManager {
     event SetMinDelegateThreshold(uint256 _minDelegateThreshold);
     event SetMinUndelegateThreshold(uint256 _minUndelegateThreshold);
     event SetRedirectAddress(address indexed _address);
+    event Withdrawal(
+        address indexed _account,
+        uint256 _xdcXAmount,
+        uint256 _xdcAmount
+    );
+
 }

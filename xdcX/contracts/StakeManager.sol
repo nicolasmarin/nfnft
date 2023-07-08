@@ -171,13 +171,12 @@ contract StakeManager is
             address(this),
             _amountInXdcX
         );
-        emit RequestWithdraw(msg.sender, _amountInXdcX);
 
         IXdcX(xdcX).burn(address(this), _amountInXdcX);
 
         AddressUpgradeable.sendValue(payable(msg.sender), totalXdcToWithdraw);
 
-        emit ClaimWithdrawal(user, _idx, amount);
+        emit Withdrawal(msg.sender, _amountInXdcX, totalXdcToWithdraw);
     }
 
     ////////////////////////////////////////////////////////////
@@ -280,9 +279,14 @@ contract StakeManager is
         override
         returns (uint256 _xdcXWithdrawLimit)
     {
-        _xdcXWithdrawLimit =
-            convertXdcToXdcX(depositsDelegated) -
-            totalXdcXToBurn;
+        if (depositsDelegated == 0) {
+            return 0;
+        }
+
+        // We can only undelegate if the amount of XDC to be withdrawn is less than 10 millions XDC
+        uint256 maxToUndelegate = depositsDelegated - minDelegateThreshold;
+        
+        _xdcXWithdrawLimit = convertXdcToXdcX(maxToUndelegate);
     }
 
     ////////////////////////////////////////////////////////////
