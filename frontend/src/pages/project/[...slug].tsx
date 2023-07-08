@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import EarningCalculator from '@/components/EarningCalculator';
 import Modal from 'react-modal';
 import NFERC721 from '@/constants/NFERC721';
+import { db } from '@vercel/postgres';
 
 type Project = {
   wallet: string
@@ -638,22 +639,35 @@ const Index = ({
   );
 };
 
+// var to know if its development
+const isDev = process.env.NODE_ENV === 'development';
+
 export const getStaticProps: GetStaticProps = async (context) => {
+  console.log("00000 slug");
   const { slug } = context.params;
-  console.log("slug", slug)
-  const res = await fetch(
-    `http://localhost:3000/api/get-project-by-slug/`,
-    {
-      body: JSON.stringify({slug: slug}),
-      method: 'POST'
-    }
-  );
-  const project = await res.json()
-  console.log("project", project)
+  console.log("slug", slug);
+
+  const client = await db.connect();
+  
+  let project;
+  try {
+    console.log("Before query");
+    project = await client.sql`SELECT * FROM projects WHERE projectslug = ${slug[0]}`;
+    console.log("After query");
+    console.log("project?.rowCount vale: ", project?.rowCount);
+    console.log("project: ", project);
+  } catch (error) {
+    console.error("query error", error);
+  }
+
+  console.log("AAAAA3333");
+
+  
+  const projectRows = project?.rows?.[0];
 
   return {
     props: {
-      project: project?.project?.rows?.[0],
+      project: projectRows??null,
     },
   }
 }
