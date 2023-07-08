@@ -16,7 +16,19 @@ import { AppConfig } from '@/utils/AppConfig';
 
 import { publicProvider } from 'wagmi/providers/public';
 
-export const chains = [xdc, gnosis, scrollTestnet];
+const xdcCustom = {
+                    ...xdc,
+                    rpcUrls: {
+                      public: { http: ['https://erpc.xinfin.network'] },
+                      default: { http: ['https://erpc.xinfin.network'] },
+                    },
+                    blockExplorers: {
+                      etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+                      default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+                    },
+                  };
+
+export const chains = [xdcCustom, gnosis, scrollTestnet];
 
 const { connectors } = getDefaultWallets({
   appName: AppConfig.title,
