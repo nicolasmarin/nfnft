@@ -10,7 +10,7 @@ Some important **key features** of our implementation:
 
 - The StakeManager contract will hold its value until it reaches a minimum of 10,000,000 XDC, at which point it will delegate the staking process. However, users will get xdcX from the very first delegation.
 - Users have the flexibility to unstake their tokens at any time, as long as there is a sufficient amount staked, and the staked amount remains above of the minimum 10,000,000 XDC.
-- xdcX is a yield-bearing ERC-20 token, meaning it generates yields by simply holding it. When users redeem their tokens, they receive the amount of XDC staked plus the generated yield as a reward.
+- xdcX is a yield-bearing XRC20 token, meaning it generates yields by simply holding it. When users redeem their tokens, they receive the amount of XDC staked plus the generated yield as a reward.
 
 
 
