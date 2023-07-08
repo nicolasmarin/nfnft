@@ -5,7 +5,7 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAccount, useContractWrite, useNetwork, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { useAccount, useContractRead, useContractWrite, useNetwork, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
 import UploadImage from '@/components/UploadImage';
 import Tooltip from '@/components/Tooltip';
 import { ChangeEvent, useState } from 'react';
@@ -26,18 +26,34 @@ const Index = () => {
   const [projectSettingDaysPenalty, setProjectSettingDaysPenalty] = useState<number>(365);
   const [artworkURL, setArtworkURL] = useState<string>("");
   const [contractAddress, setContractAddress] = useState<string>("");
+  const [salt] = useState<ethers.BigNumber>(ethers.BigNumber.from(ethers.utils.randomBytes(32)));
 
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
+
   
   const factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
   let ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS || "";
+
+  const { data: expectedAddress } = useContractRead({
+    abi: factoryABI,
+    address: factoryContractAddress,
+    functionName: 'predictDeterministicAddress',
+    args: [salt?.toHexString?.()],
+    watch: false,
+    onSuccess: (data) => {
+      // alert("success" + data);
+      if (contractAddress !== data) setContractAddress(data);
+    }
+  });
+
+  console.log("expectedAddress", expectedAddress);
 
   const saveProject = async () => {
     try {
       let data = { 
         wallet,
-        factoryContractAddress,
+        contractAddress,
         projectName,
         projectSymbol,
         projectDescription,
@@ -74,6 +90,7 @@ const Index = () => {
     projectSettingDaysPenalty === 0 ||
     artworkURL === "" || 
     ercPaymentAddress === "" || !ercPaymentAddress
+    || expectedAddress === "" || !expectedAddress
   ) {
     isDisabled = true;
   }
@@ -105,7 +122,7 @@ const Index = () => {
       projectSymbol,
       ethers.utils.parseEther(projectFee.toString()), // mintPrice
       ercPaymentAddress, // ierc20paymentaddress
-      ethers.utils.formatBytes32String("0x0"), // salt
+      salt?.toHexString?.(), // salt
       [
         projectSize, // uint32 totalSupply = integers[0];
         Math.round(projectSettingSecondarySale*100), // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
@@ -136,7 +153,8 @@ const Index = () => {
     hash: createData?.hash,
     onSuccess: () => {
       console.log("Success");
-      alert("hay que settear el contract address");
+      alert("ahora guardo el proyecto");
+      saveProject();
     }
   });
 
