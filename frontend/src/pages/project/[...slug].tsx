@@ -292,7 +292,7 @@ const Index = ({
   } = usePrepareContractWrite({
     ...contractCommon,
     functionName: 'mint',
-    argsMint
+    args: argsMint
   });
 
   const { data: mintData, write: mintWrite } = useContractWrite(mintConfig);
