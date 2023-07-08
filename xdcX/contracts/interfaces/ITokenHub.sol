@@ -10,4 +10,9 @@ interface ITokenHub {
         address recipient,
         uint256 amount
     ) external payable returns (bool);
+
+    function undelegate(
+        uint256 amount
+    ) external returns (bool);
+
 }

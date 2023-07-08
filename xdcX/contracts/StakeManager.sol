@@ -166,6 +166,8 @@ contract StakeManager is
             "Not enough XDC to withdraw"
         );
 
+        _tokenHubUndelegate(totalXdcToWithdraw);
+
         IERC20Upgradeable(xdcX).safeTransferFrom(
             msg.sender,
             address(this),
@@ -302,6 +304,12 @@ contract StakeManager is
 
         require(isTransferred, "TokenHub TransferOut Failed");
         emit TransferOut(_amount);
+    }
+
+    function _tokenHubUndelegate(uint256 _amount) private {
+        bool isTransferred = ITokenHub(tokenHub).undelegate(_amount);
+
+        require(isTransferred, "TokenHub Undelegation Failed");
     }
 
     /**

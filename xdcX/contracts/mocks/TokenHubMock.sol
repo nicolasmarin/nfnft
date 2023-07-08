@@ -17,4 +17,10 @@ contract TokenHubMock is ITokenHub {
         return true;
     }
 
+    function undelegate(
+        uint256 /*amount*/
+    ) external pure override returns (bool) {
+        return true;
+    }
+
 }
