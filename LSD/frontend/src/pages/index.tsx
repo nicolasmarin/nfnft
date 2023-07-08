@@ -9,8 +9,6 @@ import { erc20ABI, useAccount, useBalance, useContractRead, useContractReads, us
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import StakeManagerABI from '../constants/StakeManager';
 import { ethers } from 'ethers';
-import config from 'next/config';
-import error from 'next/error';
 
 const Index = () => {
   const [tabActive, setTabActive] = useState<string>("Stake");

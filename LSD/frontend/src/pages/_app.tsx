@@ -14,6 +14,9 @@ import { AppConfig } from '@/utils/AppConfig';
 
 import { publicProvider } from 'wagmi/providers/public';
 
+const chainIdRaw = process.env.NEXT_PUBLIC_PLATFORM_CHAINID;
+const chainId = chainIdRaw ? parseInt(chainIdRaw) : 0;
+
 const xdcCustom = {
   ...xdc,
   name: 'XDC chain',
@@ -51,7 +54,12 @@ const xdcTestnetCustom = {
   },
 };
 
-export const chains = [xdcCustom, xdcTestnetCustom];
+export const chains = [];
+if (chainId === xdcCustom.id) {
+  chains.push(xdcCustom);
+} else if (chainId === xdcTestnetCustom.id) {
+  chains.push(xdcTestnetCustom);
+}
 
 const { connectors } = getDefaultWallets({
   appName: AppConfig.title,
