@@ -9,9 +9,9 @@ import {
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import {
   xdc,
-  gnosis,
   scrollTestnet,
   xdcTestnet,
+  gnosisChiado,
 } from 'wagmi/chains';
 import { AppConfig } from '@/utils/AppConfig';
 
@@ -20,6 +20,8 @@ import { publicProvider } from 'wagmi/providers/public';
 const xdcCustom = {
   ...xdc,
   name: 'XDC chain',
+  iconUrl: 'https://xdcx-zeta.vercel.app/assets/images/XDC.png',
+  iconBackground: '#fff',
   rpcUrls: {
     public: { http: ['https://erpc.xinfin.network'] },
     default: { http: ['https://erpc.xinfin.network'] },
@@ -39,6 +41,8 @@ const xdcCustom = {
 const xdcTestnetCustom = {
   ...xdcTestnet,
   name: 'XDC Apothem testnet',
+  iconUrl: 'https://raw.githubusercontent.com/pro100skm/xdc-token-list/master/xdc-logo-test.png',
+  iconBackground: '#fff',
   rpcUrls: {
     public: { http: ['https://erpc.apothem.network'] },
     default: { http: ['https://erpc.apothem.network'] },
@@ -54,8 +58,18 @@ const xdcTestnetCustom = {
   },
 };
 
+const chainId: Number = process.env.NEXT_PUBLIC_PLATFORM_CHAINID ? parseInt(process.env.NEXT_PUBLIC_PLATFORM_CHAINID) : 1;
 
-export const chains = [xdcCustom, xdcTestnetCustom, gnosis, scrollTestnet];
+export const chains = [];
+
+if (chainId === 50 || chainId === 51) {
+  chains.push(xdcCustom);
+  chains.push(xdcTestnetCustom);
+} else if (chainId === gnosisChiado.id) {
+  chains.push(gnosisChiado);
+} else if (chainId === scrollTestnet.id) {
+  chains.push(scrollTestnet);
+}
 
 const { connectors } = getDefaultWallets({
   appName: AppConfig.title,
