@@ -39,8 +39,6 @@ contract StakeManager is
     address private bcDepositWallet;
     address private tokenHub;
 
-    bool private isDelegationPending; // initial default value false
-
     mapping(uint256 => BotDelegateRequest) private uuidToBotDelegateRequestMap;
     mapping(uint256 => BotUndelegateRequest)
         private uuidToBotUndelegateRequestMap;
@@ -51,7 +49,6 @@ contract StakeManager is
 
     address private manager;
     address private proposedManager;
-    uint256 public feeBps; // range {0-10_000}
     mapping(uint256 => bool) public rewardsIdUsed;
 
     address public redirectAddress;
@@ -68,7 +65,6 @@ contract StakeManager is
      * @param _tokenHub - Address of the manager
      * @param _bcDepositWallet - Beck32 decoding of Address of deposit Bot Wallet on Beacon Chain with `0x` prefix
      * @param _bot - Address of the Bot
-     * @param _feeBps - Fee Basis Points
      */
     function initialize(
         address _xdcX,
@@ -76,8 +72,7 @@ contract StakeManager is
         address _manager,
         address _tokenHub,
         address _bcDepositWallet,
-        address _bot,
-        uint256 _feeBps
+        address _bot
     ) external override initializer {
         __AccessControl_init();
         __Pausable_init();
@@ -91,7 +86,6 @@ contract StakeManager is
                 (_bot != address(0))),
             "zero address provided"
         );
-        require(_feeBps <= 10000, "_feeBps must not exceed 10000 (100%)");
 
         _setRoleAdmin(BOT, DEFAULT_ADMIN_ROLE);
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
@@ -101,16 +95,14 @@ contract StakeManager is
         xdcX = _xdcX;
         tokenHub = _tokenHub;
         bcDepositWallet = _bcDepositWallet;
-        minDelegateThreshold = 1e18;
+        minDelegateThreshold = 10_000_000 * 1e18;
         minUndelegateThreshold = 1e18;
-        feeBps = _feeBps;
 
         emit SetManager(_manager);
         emit SetBotRole(_bot);
         emit SetBCDepositWallet(bcDepositWallet);
         emit SetMinDelegateThreshold(minDelegateThreshold);
         emit SetMinUndelegateThreshold(minUndelegateThreshold);
-        emit SetFeeBps(_feeBps);
     }
 
     ////////////////////////////////////////////////////////////
@@ -141,91 +133,30 @@ contract StakeManager is
      */
     function startDelegation()
         external
-        payable
         override
         whenNotPaused
         onlyRole(BOT)
         returns (uint256 _uuid, uint256 _amount)
     {
-        require(!isDelegationPending, "Previous Delegation Pending");
-
-        uint256 tokenHubRelayFee = getTokenHubRelayFee();
-        uint256 relayFeeReceived = msg.value;
         _amount = depositsInContract - (depositsInContract % TEN_DECIMALS);
 
-        require(relayFeeReceived >= tokenHubRelayFee, "Insufficient RelayFee");
-        require(_amount >= minDelegateThreshold, "Insufficient Deposit Amount");
-
         _uuid = nextDelegateUUID++; // post-increment : assigns the current value first and then increments
-        uuidToBotDelegateRequestMap[_uuid] = BotDelegateRequest({
-            startTime: block.timestamp,
-            endTime: 0,
-            amount: _amount
-        });
-        depositsBridgingOut += _amount;
-        depositsInContract -= _amount;
 
-        isDelegationPending = true;
+        // We require the bot to have at least minDelegateThreshold amount of XDC
+        // But only for the first delegation. After that, the bot can delegate any amount
+        if (_uuid == 0) {
+            require(_amount >= minDelegateThreshold, "Insufficient Deposit Amount");
+        }
+        
+        depositsInContract -= _amount;
+        depositsDelegated += _amount;
 
         // sends funds to BC
-        _tokenHubTransferOut(_amount, relayFeeReceived);
+        _tokenHubTransferOut(_amount);
+
+        emit Delegate(_uuid, _amount);
     }
 
-    function retryTransferOut(uint256 _uuid)
-        external
-        payable
-        override
-        whenNotPaused
-        onlyManager
-    {
-        uint256 tokenHubRelayFee = getTokenHubRelayFee();
-        uint256 relayFeeReceived = msg.value;
-        require(relayFeeReceived >= tokenHubRelayFee, "Insufficient RelayFee");
-
-        BotDelegateRequest
-            storage botDelegateRequest = uuidToBotDelegateRequestMap[_uuid];
-
-        require(
-            isDelegationPending &&
-                (botDelegateRequest.startTime != 0) &&
-                (botDelegateRequest.endTime == 0),
-            "Invalid UUID"
-        );
-
-        uint256 extraXDC = getExtraXdcInContract();
-        require(
-            (botDelegateRequest.amount == depositsBridgingOut) &&
-                (depositsBridgingOut <= extraXDC),
-            "Invalid BridgingOut Amount"
-        );
-        _tokenHubTransferOut(depositsBridgingOut, relayFeeReceived);
-    }
-
-    /**
-     * @dev Allows bot to mark the delegateRequest as complete and update the state variables
-     * @param _uuid - unique id for which the delgation was completed
-     * @notice Use `getBotDelegateRequest` function to get more details of the logged data
-     */
-    function completeDelegation(uint256 _uuid)
-        external
-        override
-        whenNotPaused
-        onlyRole(BOT)
-    {
-        require(
-            (uuidToBotDelegateRequestMap[_uuid].amount > 0) &&
-                (uuidToBotDelegateRequestMap[_uuid].endTime == 0),
-            "Invalid UUID"
-        );
-
-        uuidToBotDelegateRequestMap[_uuid].endTime = block.timestamp;
-        uint256 amount = uuidToBotDelegateRequestMap[_uuid].amount;
-        depositsBridgingOut -= amount;
-        depositsDelegated += amount;
-
-        isDelegationPending = false;
-        emit Delegate(_uuid, amount);
-    }
 
     /**
      * @dev Allows bot to update the contract regarding the rewards
@@ -484,18 +415,6 @@ contract StakeManager is
         emit SetMinUndelegateThreshold(_minUndelegateThreshold);
     }
 
-    function setFeeBps(uint256 _feeBps)
-        external
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        require(_feeBps <= 10000, "_feeBps must not exceed 10000 (100%)");
-
-        feeBps = _feeBps;
-
-        emit SetFeeBps(_feeBps);
-    }
-
     function setRedirectAddress(address _address)
         external
         override
@@ -534,13 +453,6 @@ contract StakeManager is
         _xdcX = xdcX;
         _tokenHub = tokenHub;
         _bcDepositWallet = bcDepositWallet;
-    }
-
-    /**
-     * @return relayFee required by TokenHub contract to transfer funds from XDC
-     */
-    function getTokenHubRelayFee() public view override returns (uint256) {
-        return ITokenHub(tokenHub).relayFee();
     }
 
     function getBotDelegateRequest(uint256 _uuid)
@@ -644,13 +556,10 @@ contract StakeManager is
     /////                                                    ///
     ////////////////////////////////////////////////////////////
 
-    function _tokenHubTransferOut(uint256 _amount, uint256 _relayFee) private {
-        // have experimented with 13 hours and it worked
-        uint64 expireTime = uint64(block.timestamp + 1 hours);
-
+    function _tokenHubTransferOut(uint256 _amount) private {
         bool isTransferred = ITokenHub(tokenHub).transferOut{
-            value: (_amount + _relayFee)
-        }(address(0), bcDepositWallet, _amount, expireTime);
+            value: (_amount)
+        }(address(0), bcDepositWallet, _amount);
 
         require(isTransferred, "TokenHub TransferOut Failed");
         emit TransferOut(_amount);

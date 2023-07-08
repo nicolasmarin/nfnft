@@ -27,20 +27,14 @@ interface IStakeManager {
         address _manager,
         address _tokenHub,
         address _bcDepositWallet,
-        address _bot,
-        uint256 _feeBps
+        address _bot
     ) external;
 
     function deposit() external payable;
 
     function startDelegation()
         external
-        payable
         returns (uint256 _uuid, uint256 _amount);
-
-    function retryTransferOut(uint256 _uuid) external payable;
-
-    function completeDelegation(uint256 _uuid) external;
 
     function addRestakingRewards(uint256 _id, uint256 _amount) external;
 
@@ -71,8 +65,6 @@ interface IStakeManager {
     function setMinUndelegateThreshold(uint256 _minUndelegateThreshold)
         external;
 
-    function setFeeBps(uint256 _feeBps) external;
-
     function setRedirectAddress(address _address) external;
 
     function getTotalPooledXdc() external view returns (uint256);
@@ -86,8 +78,6 @@ interface IStakeManager {
             address _tokenHub,
             address _bcDepositWallet
         );
-
-    function getTokenHubRelayFee() external view returns (uint256);
 
     function getBotDelegateRequest(uint256 _uuid)
         external
@@ -140,6 +130,5 @@ interface IStakeManager {
     event SetBCDepositWallet(address indexed _address);
     event SetMinDelegateThreshold(uint256 _minDelegateThreshold);
     event SetMinUndelegateThreshold(uint256 _minUndelegateThreshold);
-    event SetFeeBps(uint256 _feeBps);
     event SetRedirectAddress(address indexed _address);
 }

@@ -18,7 +18,6 @@ describe("Stake Manager Contract", () => {
   let tokenHub: TokenHubMock;
 
   let relayFee: BigNumber;
-  let feeBps: BigNumber;
 
   let uStakeManager: StakeManager;
   let bStakeManager: StakeManager;
@@ -43,7 +42,6 @@ describe("Stake Manager Contract", () => {
     user = users[1];
     bcDepositWallet = users[2];
     bot = users[3];
-    feeBps = BigNumber.from("100");
 
     xdcX = (await upgrades.deployProxy(
       await ethers.getContractFactory("XdcX"),
@@ -65,13 +63,11 @@ describe("Stake Manager Contract", () => {
         tokenHub.address,
         bcDepositWallet.address,
         bot.address,
-        feeBps,
       ]
     )) as StakeManager;
     await dStakeManager.deployed();
 
     await xdcX.setStakeManager(dStakeManager.address);
-    relayFee = await tokenHub.relayFee();
 
     uStakeManager = dStakeManager.connect(user);
     bStakeManager = dStakeManager.connect(bot);

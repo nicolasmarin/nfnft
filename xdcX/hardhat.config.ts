@@ -46,10 +46,9 @@ task("deployStakeManagerProxy", "Deploy StakeManager Proxy only")
   .addPositionalParam("tokenHub")
   .addPositionalParam("bcDepositWallet")
   .addPositionalParam("bot")
-  .addPositionalParam("feeBps")
   .setAction(
     async (
-      { xdcX, admin, manager, tokenHub, bcDepositWallet, bot, feeBps },
+      { xdcX, admin, manager, tokenHub, bcDepositWallet, bot },
       hre: HardhatRuntimeEnvironment
     ) => {
       await deployProxy(
@@ -60,8 +59,7 @@ task("deployStakeManagerProxy", "Deploy StakeManager Proxy only")
         manager,
         tokenHub,
         bcDepositWallet,
-        bot,
-        feeBps
+        bot
       );
     }
   );

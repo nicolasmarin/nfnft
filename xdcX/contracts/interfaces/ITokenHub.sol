@@ -6,12 +6,9 @@ pragma solidity ^0.8.0;
  * @dev Helps in transfers of XDC and XRC20 tokens
  */
 interface ITokenHub {
-    function relayFee() external view returns (uint256);
-
     function transferOut(
         address contractAddr,
         address recipient,
-        uint256 amount,
-        uint64 expireTime
+        uint256 amount
     ) external payable returns (bool);
 }

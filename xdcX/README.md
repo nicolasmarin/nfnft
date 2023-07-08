@@ -24,19 +24,19 @@ npx solhint 'contracts/**/*.sol' --fix
 To deploy contracts, run:
 
 ```bash
-NODE_ENV=main npx hardhat deployXdcXProxy <admin> --network <network>
-NODE_ENV=main npx hardhat upgradeXdcXProxy <proxyAddress> --network <network>
-NODE_ENV=main npx hardhat deployXdcXImpl --network <network>
+npx hardhat deployXdcXProxy <admin> --network <network>
+npx hardhat upgradeXdcXProxy <proxyAddress> --network <network>
+npx hardhat deployXdcXImpl --network <network>
 
-NODE_ENV=main npx hardhat deployStakeManagerProxy <xdcX> <admin> <manager> <tokenHub> <bcDepositWallet> <bot> <feeBps> --network <network>
-NODE_ENV=main npx hardhat upgradeStakeManagerProxy <proxyAddress> --network <network>
-NODE_ENV=main npx hardhat deployStakeManagerImpl --network <network>
+npx hardhat deployStakeManagerProxy <xdcX> <admin> <manager> <tokenHub> <bcDepositWallet> <bot> --network <network>
+npx hardhat upgradeStakeManagerProxy <proxyAddress> --network <network>
+npx hardhat deployStakeManagerImpl --network <network>
 
-NODE_ENV=main npx hardhat deployReferralContract <admin> <trustedForwarder> --network <network>
-NODE_ENV=main npx hardhat upgradeReferralContract <proxyAddress> --network <network>
+npx hardhat deployReferralContract <admin> <trustedForwarder> --network <network>
+npx hardhat upgradeReferralContract <proxyAddress> --network <network>
 ```
 
-## Verifying on etherscan
+## Verifying on scan
 
 ```bash
 npx hardhat verify <address> <...args> --network <network>
