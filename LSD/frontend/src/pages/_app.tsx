@@ -25,6 +25,11 @@ const xdcCustom = {
     etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
     default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
   },
+  contracts: {
+    multicall3: {
+        address: "0xA564A3afac61dAde6E860E532e1Ca8924b1be87E",
+    },
+  },
 };
 
 
@@ -38,6 +43,11 @@ const xdcTestnetCustom = {
   blockExplorers: {
     etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
     default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+  },
+  contracts: {
+    multicall3: {
+        address: "0xeDf2b192b92982A86f8F6612ef2CEf4277a4Ba72",
+    },
   },
 };
 
