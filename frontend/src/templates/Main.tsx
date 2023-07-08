@@ -35,7 +35,7 @@ const Main = (props: IMainProps) => (
         <div className="mx-auto max-w-screen-xl">
           <div className="md:flex md:justify-between">
             <div className="mb-6 md:mb-0">
-              <Link className="flex items-center mb-4 no-underline" href="/app/">
+              <Link className="flex items-center mb-4 no-underline" href="/">
                 <Image src="/logo.svg" width={32} height={32} className="mr-2 h-8" alt={`${AppConfig.title} Logo`} />
                 <span className="self-center text-2xl font-semibold whitespace-nowrap">{AppConfig.title}</span>
               </Link>

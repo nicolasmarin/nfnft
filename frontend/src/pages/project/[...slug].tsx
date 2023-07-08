@@ -6,11 +6,13 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAccount, useNetwork } from 'wagmi';
-import Tooltip from '@/components/Tooltip';
+import { useAccount, useContractReads, useNetwork } from 'wagmi';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { ethers } from 'ethers';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import EarningCalculator from '@/components/EarningCalculator';
+import Modal from 'react-modal';
+import NFERC721 from '@/constants/NFERC721';
 
 type Project = {
   wallet: string
@@ -34,23 +36,117 @@ const Index = ({
   project,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const [modalEarningCalculatorIsOpen, setModalEarningCalculatorIsOpen] = useState<boolean>(false);
+  const [mintInvest, setMintInvest] = useState<number>(0);
+
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
 
-  const totalStakedRaw = 0;
-  const totalAmountWithRewards = 0;
-  const burnedTokens = 0;
-  const withdrawPenaltyPercentage = 5_00;
-  const withdrawPenaltyTimeDays = 365;
-  const mintRoyaltyFee = 7_00;
+  const contractCommon = {
+    address: project.contractaddress,
+    abi: NFERC721,
+    chainId: activeChain?.id,
+  }
+
+  const { data: contractReadsData } = useContractReads({
+    contracts: [
+      {
+        ...contractCommon,
+        functionName: 'mintPrice', // Devuelve uint256
+      },
+      {
+        ...contractCommon,
+        functionName: 'totalPendingToWithdraw', // Devuelve uint256
+        args: [wallet??ethers.constants.AddressZero],
+      },
+      {
+        ...contractCommon,
+        functionName: 'collectionSize', // Devuelve uint256
+      },
+      {
+        ...contractCommon,
+        functionName: 'totalAmountOfStakes', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'withdrawPenaltyTime', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'totalStakedRaw', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'burnedTokens', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'withdrawPenaltyPercentage', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'royaltyFee', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'mintRoyaltyFee', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'rewardsRoyaltyFee', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'getTotalAmountWithRewards', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'totalSupply', // Devuelve xxxx
+      },
+      {
+        ...contractCommon,
+        functionName: 'erc20PaymentAddress', // Devuelve address
+      },
+    ],
+    watch: false,
+    enabled: isConnected && activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.(),    
+  });
+
+  const mintPrice:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[0]?contractReadsData?.[0]:undefined:undefined;
+  const totalPendingToWithdrawArray = contractReadsData?contractReadsData?.[1]?contractReadsData?.[1]:undefined:undefined;
+  const totalSupply:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[2]?contractReadsData?.[2]:undefined:undefined;
+  const totalAmountOfStakes:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[3]?contractReadsData?.[3]:undefined:undefined;
+  const withdrawPenaltyTime:number | undefined = contractReadsData?contractReadsData?.[4]?contractReadsData?.[4]:undefined:undefined;
+  const totalStakedRaw:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[5]?contractReadsData?.[5]:undefined:undefined;
+  const burnedTokens:number | undefined = contractReadsData?contractReadsData?.[6]?contractReadsData?.[6]:undefined:undefined;
+  const withdrawPenaltyPercentage:number | undefined = contractReadsData?contractReadsData?.[7]?contractReadsData?.[7]:undefined:undefined;
+  const royaltyFee:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[8]?contractReadsData?.[8]:undefined:undefined;
+  const mintRoyaltyFee:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[9]?contractReadsData?.[9]:undefined:undefined;
+  const rewardsRoyaltyFee:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[10]?contractReadsData?.[10]:undefined:undefined;
+  const totalAmountWithRewards:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[11]?contractReadsData?.[11]:undefined:undefined;
+  const soldTokens:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[12]?contractReadsData?.[12]:undefined:undefined;
+  const erc20PaymentAddress:`0x${string}` | undefined = contractReadsData?contractReadsData?.[13]?contractReadsData?.[13]:undefined:undefined;
+  
+
+  const withdrawPenaltyTimeDays = withdrawPenaltyTime ? parseFloat((withdrawPenaltyTime / 86400).toFixed(2)) : 0;
+
+
   const coinSymbol = "XDCX";
+
+  const priceInvest = ethers.utils.parseEther(mintInvest?.toString?.());
+
+  const functionName = 'mint(uint256)';
+  const argsMint = [priceInvest];
+
+  useEffect(() => {
+    setMintInvest(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()));
+  }, [mintPrice]);
 
   
   return (
     <MintingPage
       meta={
         <Meta
-          title={`${project.projectname} - NFNFT`}
+          title={`${project.projectname} - ${AppConfig.site_name}`}
           description={project.projectdescription}
         />
       }
@@ -68,7 +164,7 @@ const Index = ({
                       MONEY STAKED GLOBAL
                     </span>
                     <span className="text-black text-[14px] text-truncate attribute-value py-1.5">
-                      {ethers.utils.formatEther(totalStakedRaw?.toString?.())} {coinSymbol}
+                      {totalStakedRaw && ethers.utils.formatEther(totalStakedRaw?.toString?.())} {coinSymbol}
                     </span>
                   </div>
                 </div>
@@ -78,7 +174,7 @@ const Index = ({
                       BALANCE (INC. REWARDS)
                     </span>
                     <span className="text-black text-[14px] text-truncate attribute-value py-1.5">
-                    {ethers.utils.formatEther(totalAmountWithRewards?.toString?.())} {coinSymbol}
+                    {totalAmountWithRewards && ethers.utils.formatEther(totalAmountWithRewards?.toString?.())} {coinSymbol}
                     </span>
                   </div>
                 </div>
@@ -168,13 +264,38 @@ const Index = ({
               </span>
 
               <div className="flex flex-col justify-center items-center my-12 w-full">
-                {isConnected ? (
-                    <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
-                      onClick={() => {
-                        
-                      }}
-                    >
-                      Mint
+                {(isConnected && activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.()) ? (
+                    <div className="w-full">
+                      <h2 className="text-lg ml-1 text-center mx-auto text-white font-bold pb-2 pt-4">
+                        How much to invest?
+                      </h2>
+                      <div className="w-full flex relative pb-4">
+                        <input
+                          type="number"
+                          required
+                          step="0.01"
+                          lang="en"
+                          min={parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))}
+                          max={Infinity}
+                          value={mintInvest?.toString?.() === "" ? mintPrice?.toString?.() : mintInvest?.toString?.()}
+                          onChange={(e) => {
+                            let value = parseFloat(e?.target?.value);
+                            if (value >= parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))) {
+                              setMintInvest(value);
+                            }
+                          }}
+                          className="appearance-none min-w-0 w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-75"
+                          disabled={false}
+                        />
+                        <div className="absolute right-8 pt-0 text-xs md:top-3 md:text-sm"><label>{coinSymbol}</label></div>
+                      </div>
+                      <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
+                        onClick={() => {
+                          
+                        }}
+                      >
+                        Mint
+                      </div>
                     </div>
                   ) : (
                     <ConnectButton.Custom>
@@ -220,7 +341,7 @@ const Index = ({
 
                               if (chain.unsupported) {
                                 return (
-                                  <button onClick={openChainModal} type="button" className="bg-red-500 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-white px-4 flex items-center">
+                                  <button onClick={openChainModal} type="button" className="bg-red-500 w-full text-center text-3xl p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] justify-center font-bold text-white px-4 flex items-center">
                                     Wrong network
                                     <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
                                   </button>
@@ -269,17 +390,28 @@ const Index = ({
                     </ConnectButton.Custom>
                   )}
               </div>
-              
-              
             </div>
           </div>
-          
-          
-        </div>
-        
-        
-        
+        </div>        
       </div>
+
+      <Modal
+        isOpen={modalEarningCalculatorIsOpen}
+        onRequestClose={() => {
+          setModalEarningCalculatorIsOpen(!modalEarningCalculatorIsOpen);
+        }}
+        ariaHideApp={false}
+        className="z-50"
+      >
+        <EarningCalculator
+          withdrawPenaltyTime={withdrawPenaltyTime}
+          withdrawPenaltyPercentage={withdrawPenaltyPercentage}
+          mintRoyaltyFee={mintRoyaltyFee}
+          rewardsRoyaltyFee={withdrawPenaltyPercentage}
+          totalSupply={totalSupply}
+          coinSymbol={coinSymbol}
+        />
+      </Modal>
     </MintingPage>
   );
 };

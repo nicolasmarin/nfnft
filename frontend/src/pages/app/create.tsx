@@ -128,7 +128,7 @@ const Index = () => {
         Math.round(projectSettingSecondarySale*100), // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
         Math.round(projectFee*100), // uint16 mintRoyaltyFee = uint16(integers[2]);
         Math.round(projectSettingStakingRewards*100), // uint16 rewardsRoyaltyFee = uint16(integers[3]);
-        Math.round(projectSettingDaysPenalty*100),  // uint32 withdrawPenaltyTime = integers[4];
+        Math.round(projectSettingDaysPenalty*86400),  // uint32 withdrawPenaltyTime = integers[4];
         Math.round(projectSettingPenalty*100), // uint16 withdrawPenaltyPercentage = uint16(integers[5]);
       ], // integers
       artworkURL, // tokenUriEndpoint

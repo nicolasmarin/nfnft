@@ -23,3 +23,50 @@ a:hover {
 .showButtonHover:hover .buttonHidden {
   display: inline-block;
 }
+
+.ReactModal__Overlay {
+  z-index: 99999 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+.ReactModal__Content {
+  border-color: black !important;
+  padding: 0 1rem !important;
+  height: max-content !important;
+  border-radius: 1rem !important;
+  overflow-x: hidden !important;
+}
+.ReactModal__Overlay {
+  position: fixed;
+  z-index: 999999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ReactModal__Content {
+  width: 100%;
+  height: auto !important;
+  max-width: 90%;
+  max-height: 90%;
+  box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
+  position: relative;
+}
+@media (min-width: 700px) {
+  .ReactModal__Content {
+    max-width: 80%;
+  }
+}
+@media (min-width: 1400px) {
+  .ReactModal__Content {
+    max-width: 70%;
+  }
+}
+@media (min-width: 1800px) {
+  .ReactModal__Content {
+    max-width: 60%;
+  }
+}
