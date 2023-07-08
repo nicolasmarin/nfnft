@@ -53,6 +53,11 @@ const Index = ({
   const { address: wallet, isConnected } = useAccount();
   const provider = useProvider();
 
+  if (!project?.contractaddress) {
+    // Return a 404 error message if the project wasn't found.
+    return (<div>404 - Collection not found</div>);
+  }
+
   const contractCommon = {
     address: project.contractaddress,
     abi: NFERC721,
@@ -651,18 +656,16 @@ export const getStaticProps: GetStaticProps = async (context) => {
   
   let project;
   try {
-    console.log("Before query");
+    // console.log("Before query");
     project = await client.sql`SELECT * FROM projects WHERE projectslug = ${slug[0]}`;
-    console.log("After query");
-    console.log("project?.rowCount vale: ", project?.rowCount);
-    console.log("project: ", project);
+    // console.log("After query");
+    // console.log("project?.rowCount vale: ", project?.rowCount);
+    // console.log("project: ", project);
   } catch (error) {
     console.error("query error", error);
   }
 
-  console.log("AAAAA3333");
-
-  
+  // console.log("AAAAA3333");
   const projectRows = project?.rows?.[0];
 
   return {
