@@ -61,5 +61,5 @@ export default async function handler(
   } catch (error) {
     return response.status(500).json({ error });
   }
-  return response.status(200).json({ ok: "CREATE TABLES COMPLETE" });
+  return response.status(200).json({ ok: "SAVE PROJECT" });
 }
