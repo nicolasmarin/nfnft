@@ -4,7 +4,7 @@ import { Main } from '@/templates/Main';
 import { AppConfig } from '@/utils/AppConfig';
 import Image from 'next/image';
 import { ChangeEvent, useState } from 'react';
-import { erc20ABI, useAccount, useBalance, useContractRead, useContractReads, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
+import { erc20ABI, useAccount, useBalance, useContractRead, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import StakeManagerABI from '../constants/StakeManager';
@@ -15,9 +15,19 @@ const Index = () => {
   const [stakeAmount, setStakeAmount] = useState<number>(0);
   const [unstakeAmount, setUnstakeAmount] = useState<number>(0);
 
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, connector } = useAccount();
+  const { chain }= useNetwork();
 
-  const stakeManagerAddress = process.env.NEXT_PUBLIC_PLATFORM_STAKE_MANAGER_ADDRESS;
+  let stakeManagerAddress;
+  let xdcxContractAddress;
+
+  if (chain?.id === 50) {
+    stakeManagerAddress="0xe5060F0B422fE3564A910050C0527E6f6Bd03753";
+    xdcxContractAddress="0x1A3c067c6c31f7Aac9e28715E0e52F99252De5d8";
+  } else if (chain?.id === 51) {
+    stakeManagerAddress="0x3D095075299308E14FAbA70D4A8f4542d3a23A62";
+    xdcxContractAddress="0x69c32592AFF808A59ABcB8DD1add825b8a035FAC";
+  }
 
   // console.log("stakeManagerAddress", stakeManagerAddress);
 
@@ -26,7 +36,6 @@ const Index = () => {
     abi: StakeManagerABI,
   }; 
 
-  const xdcxContractAddress = process.env.NEXT_PUBLIC_PLATFORM_XDCX_CONTRACT_ADDRESS;
 
   // console.log("xdcxContractAddress", xdcxContractAddress);
 
