@@ -140,6 +140,7 @@ const Index = () => {
     config: createConfig,
     error: createPrepareError,
     isError: createIsPrepareError,
+    isLoading: createPrepareIsLoading,
   } = usePrepareContractWrite({
     address: factoryContractAddress,
     abi: factoryABI,
@@ -147,18 +148,17 @@ const Index = () => {
     args: args,
   });
 
-  const { data: createData, error: createWriteError, isError: createIsError, write: createWrite } = useContractWrite(createConfig);
+  const { data: createData, error: createWriteError, isError: createIsError, isLoading: createWriteIsLoading, write: createWrite } = useContractWrite(createConfig);
  
   const { isLoading: createIsLoading, isSuccess: createIsSuccess } = useWaitForTransaction({
     hash: createData?.hash,
     onSuccess: () => {
-      console.log("Success");
-      alert("ahora guardo el proyecto");
       saveProject();
     }
   });
 
-  if (!createWrite) isDisabled = true;
+  const isLoading = createIsLoading || createWriteIsLoading || createPrepareIsLoading;
+  if (isLoading || !createWrite) isDisabled = true;
 
   return (
     <Main
@@ -501,7 +501,7 @@ const Index = () => {
               <div className="w-full md:w-2/3 text-center mt-10 mb-20">
                 <div className="mt-10"></div>
                 <button 
-                  type="submit" className="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
+                  type="submit" className={`mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500 ${isLoading?"animate-pulse":""}`}
                   disabled={isDisabled}
                   onClick={() => {
                     if (createWrite) createWrite?.();
@@ -509,7 +509,12 @@ const Index = () => {
                   
                   }}
                 >
-                  Deploy to {activeChain?.name}
+                  {(()=>{
+                    if (isLoading) return "Loading...";
+                    if (createIsSuccess) return "Project created successfully!";
+                    return (<>Deploy to {activeChain?.name}</>)
+                  })()}
+                  
                 </button>
               </div>
             </div>
