@@ -6,7 +6,7 @@ Liquid Staking Derivatives (LSDs) are a financial innovation that combines the b
 
 LSDs address this limitation by creating derivative tokens that represent the staked assets. We've developed **xdcX** as a XRC20 token. By holding xdcX, token holders can retain ownership of their staked assets while also enjoying the benefits of liquidity, fungibility, and tradability that come with derivative tokens.
 
-Some important key features of the implementation:
+Some important **key features** of our implementation:
 
 - The StakeManager contract will hold its value until it reaches a minimum of 10,000,000 XDC, at which point it will delegate the staking process. However, users will get xdcX from the very first delegation.
 - Users have the flexibility to unstake their tokens at any time, as long as there is a sufficient amount staked, and the staked amount remains above of the minimum 10,000,000 XDC.
@@ -29,12 +29,12 @@ xdcX provide several advantages, including:
 4. **Enhanced Returns:** xdcX provides the potential for additional returns beyond staking rewards. Token holders can leverage the liquidity of their derivative tokens to participate in various DeFi strategies that generate yield or benefit from the appreciation of the underlying assets.
 
 Overall, Liquid Staking Derivatives offer a bridge between the benefits of staking and the liquidity and flexibility of traditional financial markets. They empower users to unlock the value of staked assets, engage in DeFi opportunities, and enjoy the advantages of liquidity and fungibility while still earning staking rewards.
-Liquid staking on XDC. 
 
+## Compiling
 
 ```shell
-npx hardhat compile
 npx hardhat clean
+npx hardhat compile
 ```
 
 ## Deploying
