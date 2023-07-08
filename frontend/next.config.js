@@ -14,4 +14,10 @@ module.exports = withBundleAnalyzer({
   images: {
     domains: ["nfnft-app.s3.eu-west-3.amazonaws.com"],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 });

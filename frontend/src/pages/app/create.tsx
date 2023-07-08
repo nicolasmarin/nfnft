@@ -6,12 +6,11 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useNetwork } from 'wagmi';
-import UploadImage from '../components/UploadImage';
+import UploadImage from '@/components/UploadImage';
+import Tooltip from '@/components/Tooltip';
 
 const Index = () => {
   const { chain: activeChain } = useNetwork();
-
-  
 
   return (
     <Main
@@ -77,7 +76,7 @@ const Index = () => {
                               {(() => {
                                 if (!connected) {
                                   return (
-                                    <button onClick={openConnectModal} type="button">
+                                    <button onClick={openConnectModal} type="button" className="bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-white px-4 flex items-center">
                                       Connect Wallet
                                     </button>
                                   );
@@ -98,6 +97,7 @@ const Index = () => {
                                       onClick={openChainModal}
                                       style={{ display: 'flex', alignItems: 'center' }}
                                       type="button"
+                                      className="p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-gray-800 px-4 flex items-center"
                                     >
                                       {chain.hasIcon && (
                                         <div
@@ -122,6 +122,7 @@ const Index = () => {
                                         </div>
                                       )}
                                       {chain.name}
+                                      <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
                                     </button>
                                   </div>
                                 );
@@ -135,31 +136,26 @@ const Index = () => {
                 </div>
                 <div className="flex flex-wrap">
                   <div className="field mt-4 w-full md:w-2/3">
-                    <label className="font-bold">Project Name <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="contractNameTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold">
+                      Project Name
+                      <Tooltip id="contractNameTip" message="Enter the name of your project" />
                     </label>
                     <input type="text" name="contract-name" placeholder="Project Name" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500 disabled:text-gray-500 " value="" />
                   </div>
                   <div className="field mt-4 w-full md:w-1/3 md:pl-4">
-                    <label className="font-bold">Token Symbol <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="tokenSymbolTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold">
+                      Token Symbol
+                      <Tooltip id="tokenSymbolTip" message="Enter the name of your symbol" />
                     </label>
                     <input type="text" name="token-symbol" placeholder="Token Symbol" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500 disabled:text-gray-500 " value="" />
                   </div>
                 </div>
                 <div className="field mt-4">
-                  <label className="font-bold">Project Description</label>
-                  <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                    <svg viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                    </svg>
-                  </button>
+                  <label className="font-bold">
+                    Project Description
+                    <Tooltip id="descriptionTip" message="Enter the description of your project" />
+                  </label>
+                  
                   <textarea name="project" placeholder="This description will be visible to the public on platforms such as marketplaces and third-party applications, among others." className="w-full p-2 mt-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400"></textarea>
                 </div>
               </div>
@@ -167,11 +163,9 @@ const Index = () => {
                 <div className="flex flex-wrap md:flex-nowrap w-full">
                   <div className="text-lg font-bold text-black w-full md:w-2/3 md:mr-2">
                     <div className="field mt-4">
-                      <label>Minting Fee <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="revenueTip">
-                          <svg viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                          </svg>
-                        </button>
+                      <label>
+                        Minting Fee
+                        <Tooltip id="mintingFeeTip" message="Enter the mint fee of your project" />
                       </label>
                       <div className="relative">
                         <div className="absolute left-0 inset-y-0 flex items-center pl-3 opacity-8">
@@ -195,11 +189,9 @@ const Index = () => {
                   </div>
                   <div className="text-lg font-bold text-black w-full md:w-1/3">
                     <div className="field mt-4">
-                      <label>Edition Size <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="revenueTip">
-                          <svg viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                          </svg>
-                        </button>
+                      <label>
+                        Edition Size
+                        <Tooltip id="sizeTip" message="Enter the total supply of your project" />
                       </label>
                       <input type="number" min="1" max="50000" name="total-supply" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500       disabled:text-gray-500" value="100" />
                     </div>
@@ -209,11 +201,9 @@ const Index = () => {
               <div>
                 <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-3 gap-y-5 border p-2 border-gray-600 rounded-md">
                   <div className="text-lg field w-full">
-                    <label className="font-bold flex items-center">Primary Sales (Percentage) <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold flex items-center">
+                      Primary Sales (Percentage)
+                      <Tooltip id="primarySalesTip" message={(<p>Set up the % you will take from primary sales</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">
@@ -227,11 +217,9 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="text-lg field w-full">
-                    <label className="font-bold flex items-center">Secondary Sales (Royalties) <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold flex items-center">
+                      Secondary Sales (Royalties)
+                      <Tooltip id="primarySalesTip" message={(<p>Set up the % you will take from secondary sales</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">
@@ -245,11 +233,9 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="text-lg field w-full">
-                    <label className="font-bold flex items-center">Staking rewards (Percentage) <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold flex items-center">
+                      Staking rewards (Percentage)
+                      <Tooltip id="stakingRewardsTip" message={(<p>Set up the % you will take from staking rewards</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">
@@ -263,11 +249,9 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="text-lg field w-full">
-                    <label className="font-bold flex items-center">Penalty (Percentage) <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold flex items-center">
+                      Penalty (Percentage)
+                      <Tooltip id="penaltyTip" message={(<p>Set the penalty % to be applied either for being the first to do the burn-to-withdraw or before the deadline without penalty. Therefore there will be a maximum of 2x the penalty you specify.</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">
@@ -281,11 +265,9 @@ const Index = () => {
                     </div>
                   </div>
                   <div className="text-lg field w-full">
-                    <label className="font-bold flex items-center">Days with Penalty <button className="w-4 h-4 ml-2 opacity-20 hover:opacity-50" data-tip="true" data-for="descriptionTip">
-                        <svg viewBox="0 0 24 24">
-                          <path fill="currentColor" d="M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path>
-                        </svg>
-                      </button>
+                    <label className="font-bold flex items-center">
+                      Days with Penalty
+                      <Tooltip id="stakingRewardsTip" message={(<p>Time to wait before withdrawing.</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">

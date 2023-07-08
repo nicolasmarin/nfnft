@@ -1,9 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+/frontend/node_modules
+/frontend/.pnp
+/frontend/.pnp.js
 
 # testing
 /coverage
@@ -20,15 +20,15 @@ cypress/videos
 /out
 
 # next-sitemap
-public/robots.txt
-public/sitemap.xml
-public/sitemap-*.xml
+/frontend/public/robots.txt
+/frontend/public/sitemap.xml
+/frontend/public/sitemap-*.xml
 
 # cache
 .swc/
 
 # production
-/build
+/frontend/build
 
 # misc
 .DS_Store
@@ -36,16 +36,16 @@ public/sitemap-*.xml
 Thumbs.db
 
 # debug
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+/frontend/npm-debug.log*
+/frontend/pnpm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
 
 # local env files
-.env*.local
+/frontend/.env*.local
 
 # local folder
-local
+/frontend/local
 
 # vercel
 .vercel

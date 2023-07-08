@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://nfnft.vercel.app/
+
+# Sitemaps
+Sitemap: https://nfnft.vercel.app/sitemap.xml

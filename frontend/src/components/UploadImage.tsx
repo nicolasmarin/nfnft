@@ -47,9 +47,7 @@ export default function UploadImage() {
       console.error('Upload failed.',  await upload)
     }
   }
-
-
-  console.log("artworkURL", artworkURL);
+  
   return (
     <>
       <label className="font-bold flex justify-center md:justify-start">Artwork</label>
