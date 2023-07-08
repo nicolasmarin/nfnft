@@ -19,14 +19,14 @@ const Index = () => {
 
   const { isConnected, address } = useAccount();
 
-  const stakeManagerAddress = '0x3D095075299308E14FAbA70D4A8f4542d3a23A62';
+  const stakeManagerAddress = process.env.NEXT_PUBLIC_PLATFORM_STAKE_MANAGER_ADDRESS;
 
   const stakeManagerContract = {
     address: stakeManagerAddress,
     abi: StakeManagerABI,
   }; 
 
-  const xdcxContractAddress = '0x69c32592AFF808A59ABcB8DD1add825b8a035FAC';
+  const xdcxContractAddress = process.env.NEXT_PUBLIC_PLATFORM_XDCX_CONTRACT_ADDRESS;
 
   const xdcxContract = {
     address: xdcxContractAddress,
