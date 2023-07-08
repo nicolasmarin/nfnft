@@ -32,7 +32,7 @@ export default function UploadImage(
     const fileType = encodeURIComponent(file.type)
   
     const res = await fetch(
-      `/api/upload-url?file=${filename}&fileType=${fileType}`
+      `/api/upload-artwork?file=${filename}&fileType=${fileType}`
     );
     
     const { url, fields } = await res.json()

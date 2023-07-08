@@ -251,9 +251,9 @@ const Index = () => {
                         <div className="relative">
                           <input
                             type="number" step="any" max="10" min="0" name="percentage" placeholder="5%" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500 disabled:text-gray-500"
-                            value={projectSettingPrimarySale}
+                            value={projectSettingSecondarySale}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                              setProjectSettingPrimarySale(parseFloat(e?.target?.value));
+                              setProjectSettingSecondarySale(parseFloat(e?.target?.value));
                             }}
                           />
                           <div className="absolute right-5 top-3.5 text-xs md:top-3 md:text-sm">
@@ -362,7 +362,12 @@ const Index = () => {
             <div className="flex flex-wrap flex-col md:flex-row md:flex-nowrap max-w-5xl mx-auto">
               <div className="w-full md:w-2/3 text-center mt-10 mb-20">
                 <div className="mt-10"></div>
-                <button type="submit" class="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500 " disabled="">Deploy to {activeChain?.name}</button>
+                <button 
+                  type="submit" class="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
+                  disabled=""
+                >
+                  Deploy to {activeChain?.name}
+                </button>
                 <div className="field mt-2">
                   <p className="text-sm font-normal text-pink-600">Add a valid project name</p>
                 </div>

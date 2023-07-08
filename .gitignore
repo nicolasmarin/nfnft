@@ -2,17 +2,24 @@
 
 # dependencies
 /frontend/node_modules
+/LSD/frontend/node_modules
 /frontend/.pnp
 /frontend/.pnp.js
 
 # next.js
 /frontend/.next
 /frontend/out
+/LSD/frontend/.next
+/LSD/frontend/out
 
 # next-sitemap
 /frontend/public/robots.txt
 /frontend/public/sitemap.xml
 /frontend/public/sitemap-*.xml
+
+/LSD/frontend/public/robots.txt
+/LSD/frontend/public/sitemap.xml
+/LSD/frontend/public/sitemap-*.xml
 
 # cache
 .swc/
