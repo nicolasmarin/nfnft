@@ -31,9 +31,6 @@ npx hardhat deployXdcXImpl --network <network>
 npx hardhat deployStakeManagerProxy <xdcX> <admin> <manager> <tokenHub> <bcDepositWallet> <bot> --network <network>
 npx hardhat upgradeStakeManagerProxy <proxyAddress> --network <network>
 npx hardhat deployStakeManagerImpl --network <network>
-
-npx hardhat deployReferralContract <admin> <trustedForwarder> --network <network>
-npx hardhat upgradeReferralContract <proxyAddress> --network <network>
 ```
 
 ## Verifying on scan

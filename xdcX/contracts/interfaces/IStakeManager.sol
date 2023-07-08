@@ -47,8 +47,6 @@ interface IStakeManager {
 
     function setMinDelegateThreshold(uint256 _minDelegateThreshold) external;
 
-    function setRedirectAddress(address _address) external;
-
     function getTotalPooledXdc() external view returns (uint256);
 
     function getContracts()
