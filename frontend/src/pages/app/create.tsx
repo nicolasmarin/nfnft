@@ -5,10 +5,11 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount, useContractWrite, useNetwork, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
 import UploadImage from '@/components/UploadImage';
 import Tooltip from '@/components/Tooltip';
 import { ChangeEvent, useState } from 'react';
+import { ethers } from 'ethers';
 
 const Index = () => {
   const [projectName, setProjectName] = useState<string>("");
@@ -26,12 +27,15 @@ const Index = () => {
 
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
+  
+  const factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_ADDRESS as `0x${string}`;
+  let ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS || "";
 
   const saveProject = async () => {
     try {
       let data = { 
         wallet,
-        contractAddress,
+        factoryContractAddress,
         projectName,
         projectSymbol,
         projectDescription,
@@ -66,12 +70,73 @@ const Index = () => {
     !(projectSize > 0) ||
     !(projectFee >= 0) ||
     projectSettingDaysPenalty === 0 ||
-    artworkURL === ""
+    artworkURL === "" || 
+    ercPaymentAddress === "" || !ercPaymentAddress
   ) {
     isDisabled = true;
   }
 
-  
+  let args = undefined;
+
+  if (!isDisabled) {
+      // function createCollection(
+      //   string calldata tokenName,
+      //   string calldata tokenSymbol,
+      //   uint256 mintPrice,
+      //   address iErc20PaymentAddress,
+      //   bytes32 salt,
+      //   uint32[] calldata integers,
+      //   string calldata tokenUriEndpoint    
+
+
+        // integers ARRAY
+        // uint32 totalSupply = integers[0];
+        // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
+        // uint16 mintRoyaltyFee = uint16(integers[2]);
+        // uint16 rewardsRoyaltyFee = uint16(integers[3]);
+        // uint32 withdrawPenaltyTime = integers[4];
+        // uint16 withdrawPenaltyPercentage = uint16(integers[5]);
+
+
+    args = [
+      projectName,
+      projectSymbol,
+      ethers.utils.parseEther(projectFee.toString()), // mintPrice
+      ercPaymentAddress, // ierc20paymentaddress
+      ethers.utils.formatBytes32String("0x0"), // salt
+      [
+        projectSize, // uint32 totalSupply = integers[0];
+        projectSettingSecondarySale, // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
+        projectFee, // uint16 mintRoyaltyFee = uint16(integers[2]);
+        projectSettingStakingRewards, // uint16 rewardsRoyaltyFee = uint16(integers[3]);
+        projectSettingDaysPenalty,  // uint32 withdrawPenaltyTime = integers[4];
+        projectSettingPenalty // uint16 withdrawPenaltyPercentage = uint16(integers[5]);
+      ], // integers
+      artworkURL, // tokenUriEndpoint
+    ];
+      
+  }
+
+  const {
+    config: createConfig,
+    error: createPrepareError,
+    isError: createIsPrepareError,
+  } = usePrepareContractWrite({
+    address: factoryContractAddress,
+    abi: factoryABI,
+    functionName: 'createCollection',
+    args: args,
+  });
+
+  const { data: createData, error: createWriteError, isError: createIsError, write: createWrite } = useContractWrite(createConfig);
+ 
+  const { isLoading: createIsLoading, isSuccess: createIsSuccess } = useWaitForTransaction({
+    hash: createData?.hash,
+    onSuccess: () => {
+      console.log("Success");
+      alert("hay que settear el contract address");
+    }
+  });
 
   return (
     <Main
