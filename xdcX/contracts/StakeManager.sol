@@ -29,6 +29,8 @@ contract StakeManager is
     uint256 public nextDelegateUUID;
     uint256 public minDelegateThreshold;
 
+    uint256 private notDepositedYet;
+
     address private xdcX;
     address private tokenHub;
 
@@ -97,7 +99,9 @@ contract StakeManager is
         uint256 amount = msg.value;
         require(amount > 0, "Invalid Amount");
 
+        notDepositedYet = amount;
         uint256 xdcXToMint = convertXdcToXdcX(amount);
+        delete(notDepositedYet);
 
         IXdcX(xdcX).mint(msg.sender, xdcXToMint);
     }
@@ -241,7 +245,7 @@ contract StakeManager is
     ////////////////////////////////////////////////////////////
 
     function getTotalPooledXdc() public view override returns (uint256) {
-        return (depositsDelegated + depositsInContract());
+        return (depositsDelegated + depositsInContract() - notDepositedYet);
     }
 
     function getContracts()
