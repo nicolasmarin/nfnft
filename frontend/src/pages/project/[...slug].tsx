@@ -6,7 +6,7 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { erc721ABI, useAccount, useContractEvent, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useProvider, useWaitForTransaction } from 'wagmi';
+import { erc20ABI, erc721ABI, useAccount, useContractEvent, useContractRead, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useProvider, useWaitForTransaction } from 'wagmi';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { BigNumber, ethers } from 'ethers';
 import { useEffect, useState } from 'react';
@@ -55,7 +55,6 @@ const Index = ({
   const contractCommon = {
     address: project.contractaddress,
     abi: NFERC721,
-    chainId: activeChain?.id,
   }
 
   const { data: contractReadsData, refetch: contractReadsRefetch } = useContractReads({
@@ -136,6 +135,16 @@ const Index = ({
   const totalAmountWithRewards:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[11]?contractReadsData?.[11]:undefined:undefined;
   const soldTokens:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[12]?contractReadsData?.[12]:undefined:undefined;
   const erc20PaymentAddress:`0x${string}` | undefined = contractReadsData?contractReadsData?.[13]?contractReadsData?.[13]:undefined:undefined;
+
+  const {data: allowance} = useContractRead({
+    address: erc20PaymentAddress,
+    abi: erc20ABI,
+    functionName: 'allowance',
+    args: wallet?[wallet, project.contractaddress]:undefined,
+    watch: false,
+  });
+
+  // console.log("allowance", allowance?.toString());
   
 
   const withdrawPenaltyTimeDays = withdrawPenaltyTime ? parseFloat((withdrawPenaltyTime / 86400).toFixed(2)) : 0;
@@ -284,14 +293,15 @@ const Index = ({
 
   const priceInvest = mintInvest?ethers.utils.parseEther(mintInvest?.toString?.()):undefined;
 
-  const argsMint = [priceInvest];
-
+  const enoughAllowance = allowance && priceInvest && allowance.gte(priceInvest);
+  
   const {
     config: mintConfig,
   } = usePrepareContractWrite({
     ...contractCommon,
     functionName: 'mint',
-    args: argsMint
+    args: [priceInvest],
+    enabled: enoughAllowance,
   });
 
   const { data: mintData, write: mintWrite } = useContractWrite(mintConfig);
@@ -477,6 +487,7 @@ const Index = ({
                             if (mintIsLoading) return "Minting...";
                             if (mintIsSuccess) return "Minted!";
                             if (mintWrite) return "Mint";
+                            if (!enoughAllowance) return "Needs allowance";
                             return "Loading...";
                           })()
                         }
