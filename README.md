@@ -1,2 +1,2 @@
-# nfnft
-No Fear NFT
+# ethBarcelona submission
+
