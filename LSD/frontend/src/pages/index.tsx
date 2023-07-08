@@ -155,7 +155,7 @@ const Index = () => {
             </div>
             <div>
               <div className="text-xl font-bold">XDC</div>
-              <div className="text-sm font-normal">Stake XDC and use xdcX while earning staking rewards.</div>
+              <div className="text-sm font-normal">S staking rewards.</div>
             </div>
           </div>
         </div>

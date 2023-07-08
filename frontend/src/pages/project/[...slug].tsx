@@ -210,7 +210,7 @@ const Index = ({
       // https://docs.ethers.org/v5/api/contract/contract/#Contract--events
       let allEvents;
       // console.log("manageEvents: before");
-      let creationBlockNumber = pageData?.Deploys?.blockNumber??undefined;
+      let creationBlockNumber = undefined;
       if (activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.()) {
         await provider?.getBlockNumber().then((blockNumber) => {
           // console.log("manageEvents: blockNumber ", blockNumber );
@@ -283,7 +283,7 @@ const Index = ({
 
   const coinSymbol = "XDCX";
 
-  const priceInvest = ethers.utils.parseEther(mintInvest?.toString?.());
+  const priceInvest = mintInvest?ethers.utils.parseEther(mintInvest?.toString?.()):undefined;
 
   const argsMint = [priceInvest];
 
