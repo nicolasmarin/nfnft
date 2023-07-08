@@ -420,7 +420,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const { slug } = context.params;
   console.log("slug", slug)
   const res = await fetch(
-    `http://localhost:3000/api/get-project-by-slug/`,
+    `https://${process.env.NEXT_PUBLIC_PLATFORM_APP_DOMAIN}/api/get-project-by-slug/`,
     {
       body: JSON.stringify({slug: slug}),
       method: 'POST'
