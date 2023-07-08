@@ -2,6 +2,7 @@ import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
 
 import { AppConfig } from '@/utils/AppConfig';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
@@ -56,7 +57,42 @@ const Index = () => {
             </div>
           </div>
         </Link>
+
+
+        {projects && projects.length > 0 && (
+        <div className="w-full mt-16">
+          <div className="text-4xl font-bold text-black mb-6 text-center">
+            Projects
+          </div>
+          <div>
+          {projects.map((project) => (
+            <Link key={project.projectslug} href={`/project/${project.projectslug}/`} target="_blank" className="mt-4">
+              <div className="relative w-full rounded-lg border border-gray-300 bg-white shadow-sm flex items-center space-x-3 hover:shadow-lg transition duration-150 cursor-pointer my-4">
+                <div className="flex flex-wrap md:flex-nowrap w-full">
+                  <div className="p-3 sm:p-4 flex flex-col-reverse justify-between m-1 w-full relative">
+                    <div className="w-full pr-20">
+                      <h3 className="text-base md:text-xl font-bold overflow-ellipsis whitespace-nowrap overflow-hidden" title={project.projectname}>
+                        {project.projectname}
+                      </h3>
+                    </div>
+                    <div className="absolute -right-2 -top-1 flex justify-between flex-col items-end w-full">
+                      <div className="h-[60px] md:h-[68px]">
+                        <Image alt="" width="1" height="1" className="h-full w-full rounded-r-[10px]" src={project.artworkurl} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+
       </div>
+
+      
     </Main>
   );
 };
