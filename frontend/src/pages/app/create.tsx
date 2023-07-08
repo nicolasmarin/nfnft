@@ -5,7 +5,7 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useNetwork } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import UploadImage from '@/components/UploadImage';
 import Tooltip from '@/components/Tooltip';
 import { ChangeEvent, useState } from 'react';
@@ -22,7 +22,41 @@ const Index = () => {
   const [projectSettingPenalty, setProjectSettingPenalty] = useState<number>(5);
   const [projectSettingDaysPenalty, setProjectSettingDaysPenalty] = useState<number>(365);
   const [artworkURL, setArtworkURL] = useState<string>("");
+  const [contractAddress, setContractAddress] = useState<string>("");
+
   const { chain: activeChain } = useNetwork();
+  const { address: wallet, isConnected } = useAccount();
+
+  const saveProject = async () => {
+    try {
+      let data = { 
+        wallet,
+        contractAddress,
+        projectName,
+        projectSymbol,
+        projectDescription,
+        projectFee,
+        projectSize,
+        projectSettingPrimarySale,
+        projectSettingSecondarySale,
+        projectSettingStakingRewards,
+        projectSettingPenalty,
+        projectSettingDaysPenalty,
+        artworkURL 
+      }
+      const response = await fetch(
+        `/api/save-project/`,
+        {
+          body: JSON.stringify(data),
+          method: 'POST'
+        }
+      );
+      
+      const jsonSaved = await response.json();
+      console.log("jsonSaved", jsonSaved)
+
+    } catch (error) {  }
+  }
 
   return (
     <Main
@@ -34,7 +68,7 @@ const Index = () => {
       }
     >
       <div className="bg-white w-full py-10 text-black px-2 min-h-screen">
-        <Link className="p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-black w-40 mx-auto px-4 flex justify-center items-center" href="/app/">
+        <Link className="p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-black w-40 mx-auto px-4 flex justify-center items-center" href="/">
           <span className="flex items-center justify-center w-full opacity-100">
             <div className="w-7 h-7 inline-flex flex-shrink-0 text-current mr-2">
               <svg version="1.1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 512.009 512.009">
@@ -216,7 +250,7 @@ const Index = () => {
                               <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM11 16H13V18H11V16ZM12.61 6.04C10.55 5.74 8.73 7.01 8.18 8.83C8 9.41 8.44 10 9.05 10H9.25C9.66 10 9.99 9.71 10.13 9.33C10.45 8.44 11.4 7.83 12.43 8.05C13.38 8.25 14.08 9.18 14 10.15C13.9 11.49 12.38 11.78 11.55 13.03C11.55 13.04 11.54 13.04 11.54 13.05C11.53 13.07 11.52 13.08 11.51 13.1C11.42 13.25 11.33 13.42 11.26 13.6C11.25 13.63 11.23 13.65 11.22 13.68C11.21 13.7 11.21 13.72 11.2 13.75C11.08 14.09 11 14.5 11 15H13C13 14.58 13.11 14.23 13.28 13.93C13.3 13.9 13.31 13.87 13.33 13.84C13.41 13.7 13.51 13.57 13.61 13.45C13.62 13.44 13.63 13.42 13.64 13.41C13.74 13.29 13.85 13.18 13.97 13.07C14.93 12.16 16.23 11.42 15.96 9.51C15.72 7.77 14.35 6.3 12.61 6.04Z"></path>
                             </svg>
                           </div>INVALID CUSTOM <svg className="ml-1" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                            <path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path>
                           </svg>
                         </div>
                       </div>
@@ -251,9 +285,9 @@ const Index = () => {
                         <div className="relative">
                           <input
                             type="number" step="any" max="10" min="0" name="percentage" placeholder="5%" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500 disabled:text-gray-500"
-                            value={projectSettingSecondarySale}
+                            value={projectSettingPrimarySale}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                              setProjectSettingSecondarySale(parseFloat(e?.target?.value));
+                              setProjectSettingPrimarySale(parseFloat(e?.target?.value));
                             }}
                           />
                           <div className="absolute right-5 top-3.5 text-xs md:top-3 md:text-sm">
@@ -266,14 +300,17 @@ const Index = () => {
                   <div className="text-lg field w-full">
                     <label className="font-bold flex items-center">
                       Secondary Sales (Royalties)
-                      <Tooltip id="primarySalesTip" message={(<p>Set up the % you will take from secondary sales</p>)} />
+                      <Tooltip id="secondarySalesTip" message={(<p>Set up the % you will take from secondary sales</p>)} />
                     </label>
                     <div className="text-lg font-bold text-black">
                       <div className="field">
                         <div className="relative">
                           <input
                             type="number" step="any" max="10" min="0" name="percentage" placeholder="5%" className="w-full p-2 bg-white border border-slate-300 rounded-md shadow-md placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 invalid:border-pink-500 invalid:text-pink-600 focus:invalid:border-pink-500 focus:invalid:ring-pink-500    disabled:text-gray-500"
-                            value="7.5"
+                            value={projectSettingSecondarySale}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                              setProjectSettingSecondarySale(parseFloat(e?.target?.value));
+                            }}
                           />
                           <div className="absolute right-5 top-3.5 text-xs md:top-3 md:text-sm">
                             <label>Royalties Percentage (max 10%)</label>
@@ -358,13 +395,14 @@ const Index = () => {
               />
             </div>
           </div>
-          {activeChain?.unsupported ? '' : (
+          {(activeChain?.unsupported || !isConnected) ? '' : (
             <div className="flex flex-wrap flex-col md:flex-row md:flex-nowrap max-w-5xl mx-auto">
               <div className="w-full md:w-2/3 text-center mt-10 mb-20">
                 <div className="mt-10"></div>
                 <button 
-                  type="submit" class="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
-                  disabled=""
+                  type="submit" className="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
+                  disabled={false}
+                  onClick={() => {saveProject()}}
                 >
                   Deploy to {activeChain?.name}
                 </button>

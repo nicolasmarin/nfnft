@@ -16,14 +16,13 @@ const Main = (props: IMainProps) => (
     {props.meta}
 
     <div className="w-full">
-      <header className="border-b border-gray-300 flex justify-between items-center mx-10">
-        <div className="pb-8 pt-2">
+      <header className="border-b border-gray-300 flex justify-between items-center py-4">
+        <div className="ml-10">
           <h1 className="text-3xl font-bold text-gray-900">
-            <Image width="396" height="107" src="/logo-text.svg" alt="Logo" />
+            <Image width="170" height="50" src="/logo-text.svg" alt={AppConfig.description} priority={false} />
           </h1>
-          <h2 className="text-xl">{AppConfig.description}</h2>
         </div>
-        <div className="">
+        <div className="mr-10">
           <ConnectButton />
         </div>
       </header>
