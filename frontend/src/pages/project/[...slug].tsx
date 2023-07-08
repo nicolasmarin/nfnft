@@ -141,7 +141,7 @@ const Index = ({
     abi: erc20ABI,
     functionName: 'allowance',
     args: wallet?[wallet, project.contractaddress]:undefined,
-    watch: false,
+    watch: true,
   });
 
   // console.log("allowance", allowance?.toString());
