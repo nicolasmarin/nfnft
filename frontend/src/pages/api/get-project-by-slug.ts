@@ -11,10 +11,9 @@ export default async function handler(
     let { 
       slug
     } = JSON.parse(request.body);
-    const project = await client.sql`SELECT * FROM projects WHERE projectslug = ${slug} LIMIT 1`;
-    console.log("log", `SELECT * FROM projects WHERE projectslug = ${slug}`, project);
+    const project = await client.sql`SELECT * FROM projects LIMIT 1`;
 
-    return response.status(200).json({ project });
+    return response.status(200).json({ project: project });
   } catch (error) {
     return response.status(500).json({ error });
   }
