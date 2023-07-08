@@ -52,6 +52,7 @@ const Index = () => {
     ercPaymentAddress = process.env.NEXT_PUBLIC_PLATFORM_ERC20_ADDRESS_SCROLL || "";
     factoryContractAddress = process.env.NEXT_PUBLIC_PLATFORM_FACTORY_CONTRACT_SCROLL || "";
   }
+  
   const { data: expectedAddress } = useContractRead({
     abi: factoryABI,
     address: factoryContractAddress,

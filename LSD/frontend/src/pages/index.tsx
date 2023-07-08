@@ -86,6 +86,9 @@ const Index = () => {
       enabled: true,
     });
 
+  const enoughAllowance = pooledData?.[5] && pooledData?.[5]?.gte(ethers.utils.parseEther(unstakeAmount?unstakeAmount.toString?.():'0'));
+
+
 
   const valueToStake = ethers.utils.parseEther(stakeAmount?stakeAmount.toString?.():"0");
 
@@ -402,6 +405,7 @@ const Index = () => {
                         if (undepositIsSuccess) return "Unstaked!";
                         if (undepositWrite) return "Unstake";
                         if (unstakeAmount === 0) return "Enter an amount to unstake";
+                        if (!enoughAllowance) return "Not enough allowance";
                         return "loading...";
                       })()
                     }
