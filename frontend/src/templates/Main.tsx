@@ -45,10 +45,7 @@ const Main = (props: IMainProps) => (
                 <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase">Follow us</h2>
                 <ul className="">
                   <li className="mb-4">
-                    <a href="https://twitter.com/nfts2me" target="_blank">Twitter</a>
-                  </li>
-                  <li>
-                    <a href="https://discord.com/invite/Usmgxj2Msk">Discord</a>
+                    <a href="https://twitter.com/agsola" target="_blank">Twitter</a>
                   </li>
                 </ul>
               </div>
