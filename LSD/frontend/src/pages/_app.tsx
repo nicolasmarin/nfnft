@@ -20,6 +20,8 @@ import { publicProvider } from 'wagmi/providers/public';
 const xdcCustom = {
   ...xdc,
   name: 'XDC chain',
+  iconUrl: 'https://xdcx-zeta.vercel.app/assets/images/XDC.png',
+  iconBackground: '#fff',
   rpcUrls: {
     public: { http: ['https://erpc.xinfin.network'] },
     default: { http: ['https://erpc.xinfin.network'] },
@@ -39,6 +41,8 @@ const xdcCustom = {
 const xdcTestnetCustom = {
   ...xdcTestnet,
   name: 'XDC Apothem testnet',
+  iconUrl: 'https://xdcx-zeta.vercel.app/assets/images/XDC.png',
+  iconBackground: '#fff',
   rpcUrls: {
     public: { http: ['https://erpc.apothem.network'] },
     default: { http: ['https://erpc.apothem.network'] },
