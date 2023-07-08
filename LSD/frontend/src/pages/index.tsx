@@ -28,7 +28,7 @@ const Index = () => {
 
   const xdcxContractAddress = process.env.NEXT_PUBLIC_PLATFORM_XDCX_CONTRACT_ADDRESS;
 
-  console.log("xdcxContractAddress", xdcxContractAddress);
+  // console.log("xdcxContractAddress", xdcxContractAddress);
 
   const xdcxContract = {
     address: xdcxContractAddress,
