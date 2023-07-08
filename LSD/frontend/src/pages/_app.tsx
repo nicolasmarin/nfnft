@@ -57,8 +57,10 @@ const xdcTestnetCustom = {
 export const chains = [];
 if (chainId === xdcCustom.id) {
   chains.push(xdcCustom);
+  // console.log("chain xdcCustom");
 } else if (chainId === xdcTestnetCustom.id) {
   chains.push(xdcTestnetCustom);
+  // console.log("chain xdcTestnetCustom");
 }
 
 const { connectors } = getDefaultWallets({

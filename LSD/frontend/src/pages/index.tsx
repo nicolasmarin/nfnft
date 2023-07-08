@@ -19,12 +19,16 @@ const Index = () => {
 
   const stakeManagerAddress = process.env.NEXT_PUBLIC_PLATFORM_STAKE_MANAGER_ADDRESS;
 
+  // console.log("stakeManagerAddress", stakeManagerAddress);
+
   const stakeManagerContract = {
     address: stakeManagerAddress,
     abi: StakeManagerABI,
   }; 
 
   const xdcxContractAddress = process.env.NEXT_PUBLIC_PLATFORM_XDCX_CONTRACT_ADDRESS;
+
+  console.log("xdcxContractAddress", xdcxContractAddress);
 
   const xdcxContract = {
     address: xdcxContractAddress,
