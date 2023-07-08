@@ -8,25 +8,40 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import {
-  xdc,
+  xdc, xdcTestnet,
 } from 'wagmi/chains';
 import { AppConfig } from '@/utils/AppConfig';
 
 import { publicProvider } from 'wagmi/providers/public';
 
 const xdcCustom = {
-                    ...xdc,
-                    rpcUrls: {
-                      public: { http: ['https://erpc.xinfin.network'] },
-                      default: { http: ['https://erpc.xinfin.network'] },
-                    },
-                    blockExplorers: {
-                      etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
-                      default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
-                    },
-                  };
+  ...xdc,
+  name: 'XDC chain',
+  rpcUrls: {
+    public: { http: ['https://erpc.xinfin.network'] },
+    default: { http: ['https://erpc.xinfin.network'] },
+  },
+  blockExplorers: {
+    etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+    default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+  },
+};
 
-export const chains = [xdcCustom];
+
+const xdcTestnetCustom = {
+  ...xdcTestnet,
+  name: 'XDC Apothem testnet',
+  rpcUrls: {
+    public: { http: ['https://erpc.apothem.network'] },
+    default: { http: ['https://erpc.apothem.network'] },
+  },
+  blockExplorers: {
+    etherscan: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+    default: { name: 'XDC BlocksScan', url: 'https://explorer.xinfin.network' },
+  },
+};
+
+export const chains = [xdcCustom, xdcTestnetCustom];
 
 const { connectors } = getDefaultWallets({
   appName: AppConfig.title,

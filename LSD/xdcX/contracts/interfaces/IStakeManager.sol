@@ -31,6 +31,8 @@ interface IStakeManager {
 
     function deposit() external payable;
 
+    function depositsInContract() external view returns (uint256);
+
     function delegateXdc()
         external
         returns (uint256 _uuid, uint256 _amount);
