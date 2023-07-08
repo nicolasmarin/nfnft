@@ -41,7 +41,7 @@ const xdcCustom = {
 const xdcTestnetCustom = {
   ...xdcTestnet,
   name: 'XDC Apothem testnet',
-  iconUrl: 'https://xdcx-zeta.vercel.app/assets/images/XDC.png',
+  iconUrl: 'https://raw.githubusercontent.com/pro100skm/xdc-token-list/master/xdc-logo-test.png',
   iconBackground: '#fff',
   rpcUrls: {
     public: { http: ['https://erpc.apothem.network'] },
