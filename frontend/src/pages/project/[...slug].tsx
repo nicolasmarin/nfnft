@@ -44,10 +44,9 @@ const Index = ({
   project,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const [modalEarningCalculatorIsOpen, setModalEarningCalculatorIsOpen] = useState<boolean>(false);
+  const [modalTokensOwnedIsOpen, setModalTokensOwnedIsOpen] = useState<boolean>(false);
   const [mintInvest, setMintInvest] = useState<number>(0);
   const [tokensOwned, setTokensOwned] = useState<TokensOwned>();
-
-  console.log("tokensOwned", tokensOwned)
 
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
@@ -419,9 +418,21 @@ const Index = ({
                 </button>
               </div>
             </div>
+
+            {(tokensOwned?.tokens && tokensOwned?.tokens.length > 0) && (
+              <div
+                className="w-full text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center cursor-pointer my-6"
+                onClick={() => {
+                  setModalTokensOwnedIsOpen(true);
+                }}
+              >
+                You have {tokensOwned?.tokens.length} NFT{tokensOwned?.tokens.length > 1 ? 's' : ''}
+              </div>
+            )}
             
             
-            <div className="w-full h-full flex flex-col justify-center items-center z-15">
+            
+            <div className="w-full h-full flex flex-col justify-center items-center">
               <span className="square-image">
                 <Image width={300} height={300} alt={project.projectname} className="rounded-xl mt-10" src={project.artworkurl} />
               </span>
@@ -585,6 +596,32 @@ const Index = ({
           totalSupply={totalSupply}
           coinSymbol={coinSymbol}
         />
+      </Modal>
+
+      <Modal
+        isOpen={modalTokensOwnedIsOpen}
+        onRequestClose={() => {
+          setModalTokensOwnedIsOpen(!modalTokensOwnedIsOpen);
+        }}
+        ariaHideApp={false}
+        className="z-50"
+      >
+        <div className="bg-white p-10">
+          <div className="text-center text-base">
+            Click on the token you want to perform actions on
+          </div>
+          <div className="bg-white p-10 rounded-xl grid grid-cols-3 gap-3">
+            {tokensOwned?.tokens.map((token) => (
+                <div
+                  key={token.id.toString()}
+                  className="text-center border hover:border-black p-2 rounded-xl cursor-pointer"
+                >
+                  <Image width={300} height={300} alt={project.projectname} className="rounded-xl mt-10 mx-auto" src={project.artworkurl} />
+                  {project.projectname} #{token.id.toString()}
+                </div>
+              ))}
+          </div>
+        </div>
       </Modal>
     </MintingPage>
   );
