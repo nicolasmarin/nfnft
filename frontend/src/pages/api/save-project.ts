@@ -11,6 +11,7 @@ export default async function handler(
     let { 
       wallet,
       contractAddress,
+      chainId,
       projectName,
       projectSymbol,
       projectDescription,
@@ -28,6 +29,7 @@ export default async function handler(
     await client.sql`INSERT INTO Projects (
                                         wallet,
                                         contractAddress,
+                                        chainId,
                                         projectName,
                                         projectSlug,
                                         projectSymbol,
@@ -45,6 +47,7 @@ export default async function handler(
                                       (
                                         ${wallet},
                                         ${contractAddress},
+                                        ${chainId}
                                         ${projectName},
                                         ${projectSlug},
                                         ${projectSymbol},

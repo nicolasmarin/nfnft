@@ -83,6 +83,7 @@ const Index = () => {
       let data = { 
         wallet,
         contractAddress,
+        chainId: activeChain?.id,
         projectName,
         projectSymbol,
         projectDescription,

@@ -11,7 +11,7 @@ export default async function handler(
     await client.sql`CREATE TABLE Projects ( 
                                          wallet varchar(255),
                                          contractAddress varchar(255),
-                                         network varchar(255),
+                                         chainId integer,
                                          projectName varchar(255),
                                          projectSlug varchar(255),
                                          projectSymbol varchar(255),
