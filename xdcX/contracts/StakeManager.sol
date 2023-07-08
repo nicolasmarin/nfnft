@@ -38,8 +38,6 @@ contract StakeManager is
     address private proposedManager;
     mapping(uint256 => bool) public rewardsIdUsed;
 
-    address public redirectAddress;
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -224,7 +222,6 @@ contract StakeManager is
         emit RevokeBotRole(_address);
     }
 
-
     function setMinDelegateThreshold(uint256 _minDelegateThreshold)
         external
         override
@@ -236,19 +233,6 @@ contract StakeManager is
         emit SetMinDelegateThreshold(_minDelegateThreshold);
     }
 
-
-    function setRedirectAddress(address _address)
-        external
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        require(redirectAddress != _address, "Old address == new address");
-        require(_address != address(0), "zero address provided");
-
-        redirectAddress = _address;
-
-        emit SetRedirectAddress(_address);
-    }
 
     ////////////////////////////////////////////////////////////
     /////                                                    ///
@@ -359,10 +343,8 @@ contract StakeManager is
         paused() ? _unpause() : _pause();
     }
 
+    // To receive XDC rewards from the Beacon Chain
     receive() external payable {
-        if (msg.sender != redirectAddress) {
-            AddressUpgradeable.sendValue(payable(redirectAddress), msg.value);
-        }
     }
 
     modifier onlyManager() {
