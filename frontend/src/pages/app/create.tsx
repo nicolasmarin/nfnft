@@ -58,6 +58,21 @@ const Index = () => {
     } catch (error) {  }
   }
 
+  let isDisabled = false;
+  if (
+    projectName === "" ||
+    projectSymbol === "" ||
+    projectDescription === "" ||
+    !(projectSize > 0) ||
+    !(projectFee >= 0) ||
+    projectSettingDaysPenalty === 0 ||
+    artworkURL === ""
+  ) {
+    isDisabled = true;
+  }
+
+  
+
   return (
     <Main
       meta={
@@ -81,7 +96,6 @@ const Index = () => {
           </span>
         </Link>
         <h2 className="max-w-5xl mx-auto text-2xl mt-4 font-bold text-center md:text-left">Create NFT Project</h2>
-        <form>
           <div className="flex flex-wrap flex-col md:flex-row md:flex-nowrap max-w-5xl mx-auto mb-6">
             <div className="w-full md:w-2/3">
               <div>
@@ -401,19 +415,19 @@ const Index = () => {
                 <div className="mt-10"></div>
                 <button 
                   type="submit" className="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
-                  disabled={false}
-                  onClick={() => {saveProject()}}
+                  disabled={isDisabled}
+                  onClick={() => {
+
+                    // saveProject();
+                  
+                  }}
                 >
                   Deploy to {activeChain?.name}
                 </button>
-                <div className="field mt-2">
-                  <p className="text-sm font-normal text-pink-600">Add a valid project name</p>
-                </div>
               </div>
             </div>
           )}
     
-        </form>
       </div>
     </Main>
   );
