@@ -19,12 +19,6 @@ npx hardhat upgradeStakeManagerProxy <proxyAddress> --network <network>
 npx hardhat deployStakeManagerImpl --network <network>
 ```
 
-## Verifying on scan
-
-```bash
-npx hardhat verify <address> <...args> --network <network>
-```
-
 ## Integration
 
 Smart contract integration guide is at [link](INTEGRATION.md)
