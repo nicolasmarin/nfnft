@@ -10,6 +10,8 @@ import UploadImage from '@/components/UploadImage';
 import Tooltip from '@/components/Tooltip';
 import { ChangeEvent, useState } from 'react';
 import { ethers } from 'ethers';
+import factoryABI from '../../constants/factoryABI';
+import NFERC721 from '../../constants/NFERC721';
 
 const Index = () => {
   const [projectName, setProjectName] = useState<string>("");
@@ -106,11 +108,11 @@ const Index = () => {
       ethers.utils.formatBytes32String("0x0"), // salt
       [
         projectSize, // uint32 totalSupply = integers[0];
-        projectSettingSecondarySale, // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
-        projectFee, // uint16 mintRoyaltyFee = uint16(integers[2]);
-        projectSettingStakingRewards, // uint16 rewardsRoyaltyFee = uint16(integers[3]);
-        projectSettingDaysPenalty,  // uint32 withdrawPenaltyTime = integers[4];
-        projectSettingPenalty // uint16 withdrawPenaltyPercentage = uint16(integers[5]);
+        Math.round(projectSettingSecondarySale*100), // uint16 secondarySalesRoyaltyFee = uint16(integers[1]);
+        Math.round(projectFee*100), // uint16 mintRoyaltyFee = uint16(integers[2]);
+        Math.round(projectSettingStakingRewards*100), // uint16 rewardsRoyaltyFee = uint16(integers[3]);
+        Math.round(projectSettingDaysPenalty*100),  // uint32 withdrawPenaltyTime = integers[4];
+        Math.round(projectSettingPenalty*100), // uint16 withdrawPenaltyPercentage = uint16(integers[5]);
       ], // integers
       artworkURL, // tokenUriEndpoint
     ];
@@ -137,6 +139,8 @@ const Index = () => {
       alert("hay que settear el contract address");
     }
   });
+
+  if (!createWrite) isDisabled = true;
 
   return (
     <Main
@@ -482,7 +486,7 @@ const Index = () => {
                   type="submit" className="mx-auto text-2xl font-bold border-2 border-gray-600 bg-white rounded-lg p-4 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500 disabled:border-gray-500"
                   disabled={isDisabled}
                   onClick={() => {
-
+                    if (createWrite) createWrite?.();
                     // saveProject();
                   
                   }}
