@@ -6,9 +6,9 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useAccount, useContractReads, useNetwork } from 'wagmi';
+import { erc721ABI, useAccount, useContractEvent, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useProvider, useWaitForTransaction } from 'wagmi';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import EarningCalculator from '@/components/EarningCalculator';
 import Modal from 'react-modal';
@@ -31,15 +31,27 @@ type Project = {
   artworkURL: string
 }
 
+export type TokensOwned = {
+  owner: `0x${string}` | undefined;
+  tokens: {
+    id: BigNumber;
+    // block: bigint;
+  }[];
+};
+
 
 const Index = ({
   project,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const [modalEarningCalculatorIsOpen, setModalEarningCalculatorIsOpen] = useState<boolean>(false);
   const [mintInvest, setMintInvest] = useState<number>(0);
+  const [tokensOwned, setTokensOwned] = useState<TokensOwned>();
+
+  console.log("tokensOwned", tokensOwned)
 
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
+  const provider = useProvider();
 
   const contractCommon = {
     address: project.contractaddress,
@@ -47,7 +59,7 @@ const Index = ({
     chainId: activeChain?.id,
   }
 
-  const { data: contractReadsData } = useContractReads({
+  const { data: contractReadsData, refetch: contractReadsRefetch } = useContractReads({
     contracts: [
       {
         ...contractCommon,
@@ -129,13 +141,168 @@ const Index = ({
 
   const withdrawPenaltyTimeDays = withdrawPenaltyTime ? parseFloat((withdrawPenaltyTime / 86400).toFixed(2)) : 0;
 
+  function updateTokens(tokens: { id: BigNumber; }[], from: `0x${string}`, to: `0x${string}`, tokenId: BigNumber, minterAddress: `0x${string}`) {
+    // Recibo un NFT
+    if (to === minterAddress && from !== minterAddress) {
+      const tokenIndex = tokens.findIndex((token) => token.id.toString() === tokenId.toString());
+      if (tokenIndex === -1) {
+        tokens.push({
+          id: tokenId
+        });
+      } else {
+        // Aquí no tiene sentido, porque recibo un NFT que ya tenía.
+        console.error("ERROR: Unexpected token transfer, already owned");
+      }      
+    } 
+
+    // Envío un NFT
+    if (from === minterAddress && to !== minterAddress) {
+      const tokenIndex = tokens.findIndex((token) => token.id.toString() === tokenId.toString());
+      if (tokenIndex !== -1) {
+        // Lo quito de la lista.
+        tokens.splice(tokenIndex, 1);
+      } else {
+        // Aquí no tiene sentido, porque envío un NFT que no tenía.
+        console.error("ERROR: Unexpected token transfer, not owned", tokenId);
+      }
+    } 
+
+    // Si no envío o recibo yo, no actualizo nada.
+  }
+
+  function handleNFTEvent(from: `0x${string}`, to: `0x${string}`, tokenId: BigNumber) {
+    try {
+      if (wallet === from || wallet === to) {
+        // console.log("New event Transfer", from, to, tokenId);
+        setTokensOwned((prev) => {
+          const newTokens = prev?.tokens?[...prev.tokens]:[];
+          updateTokens(newTokens, from, to, tokenId, wallet);
+          // console.log("New tokens", newTokens);
+
+          contractReadsRefetch();
+          return {
+            owner: prev.owner,
+            tokens: newTokens,
+          };
+        });
+      }
+    } catch (error) {
+      console.log("Error in handleNFTEvent", error);
+    }
+  }
+
+  useContractEvent({
+    once: false,
+    address: (wallet)?project.contractaddress:undefined, // Si no estoy conectado, no me suscribo a eventos.
+    chainId: activeChain?.id,
+    abi: erc721ABI,
+    eventName: 'Transfer', // event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    listener(from, to, tokenId) {
+      console.log("New event Transfer", from, to, tokenId);
+      handleNFTEvent(from, to, tokenId);
+    },
+  });
+
+
+  useEffect(() => {
+
+    async function manageEvents() {
+      // https://docs.ethers.org/v5/api/contract/contract/#Contract--events
+      let allEvents;
+      // console.log("manageEvents: before");
+      let creationBlockNumber = pageData?.Deploys?.blockNumber??undefined;
+      if (activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.()) {
+        await provider?.getBlockNumber().then((blockNumber) => {
+          // console.log("manageEvents: blockNumber ", blockNumber );
+          // Este RPC sólo soporta los últimos 10.000 bloques.
+          creationBlockNumber = blockNumber - 2000;
+        });
+      }
+
+      // 721
+      const contract = new ethers.Contract(project.contractaddress, erc721ABI, provider);
+      const fromFilter = contract.filters.Transfer(wallet);
+      const toFilter = contract.filters.Transfer(null, wallet);
+      // console.log("manageEvents: fromEvents");
+      const fromEvents = await contract.queryFilter(fromFilter, creationBlockNumber);
+      // console.log("manageEvents: toEvents");
+      const toEvents = await contract.queryFilter(toFilter, creationBlockNumber);
+      // console.log("manageEvents: toEvents ends");
+      allEvents = [...fromEvents, ...toEvents] // concatenate arrays using spread operator
+
+      // Cojo los evento to, los eventos from y luego los junto y ordeno todos.
+      allEvents.sort((a, b) => parseFloat(`${a.blockNumber}.${a.transactionIndex}`) - parseFloat(`${b.blockNumber}.${b.transactionIndex}`))
+      // console.log("manageEvents: allEvents", allEvents);
+
+      // Aquí ya tengo todos los eventos ordenados.
+      // Creo una estructura nueva.
+      const newTokens: { id: BigNumber; }[] = [];
+      allEvents.forEach((event) => {
+        if (event.event === 'Transfer') {
+          // console.log("manageEvents: Transfer, gestionar", event);
+          updateTokens(newTokens, event.args.from, event.args.to, event.args.tokenId, wallet);
+        } else if (event.event === 'TransferSingle') {
+          // console.log("manageEvents: TransferSingle, gestionar", event);
+          updateTokens(newTokens, event.args.from, event.args.to, event.args.id, wallet);
+        } else if (event.event === 'TransferBatch') {
+          // console.log("manageEvents: TransferBatch, gestionar", event);
+          event.args.ids.forEach((id) => {
+            updateTokens(newTokens, event.args.from, event.args.to, id, wallet);
+          });
+        } else {
+          // console.error("manageEvents: Unexpected event", event.event, event);
+        }
+      });
+      setTokensOwned({
+        owner: wallet,
+        tokens: newTokens,
+      });
+
+      // console.log("manageEvents: newTokens", newTokens);
+    }
+
+
+    if (tokensOwned?.owner !== wallet && provider && provider._isProvider && project.contractaddress) {
+      // console.log("DENTRO: Se llama al hook de provider", project.contractaddress, wallet, tokensOwned?.owner);
+      setTokensOwned({
+        owner: wallet,
+        tokens: [],
+      });
+
+      try {
+        manageEvents().catch((e) => {
+          console.error("manageEvents: Error managing events", e);
+        });
+      } catch (e) {
+        console.error("manageEvents: Error managing events outside", e);
+      }
+    }
+
+  }, [project.contractaddress, provider, wallet, tokensOwned]);
+
 
   const coinSymbol = "XDCX";
 
   const priceInvest = ethers.utils.parseEther(mintInvest?.toString?.());
 
-  const functionName = 'mint(uint256)';
   const argsMint = [priceInvest];
+
+  const {
+    config: mintConfig,
+  } = usePrepareContractWrite({
+    ...contractCommon,
+    functionName: 'mint',
+    argsMint
+  });
+
+  const { data: mintData, write: mintWrite } = useContractWrite(mintConfig);
+ 
+  const { isLoading: mintIsLoading, isSuccess: mintIsSuccess } = useWaitForTransaction({
+    hash: mintData?.hash,
+    onSuccess: () => {
+      console.log("Success");
+    }
+  });
 
   useEffect(() => {
     setMintInvest(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()));
@@ -291,10 +458,17 @@ const Index = ({
                       </div>
                       <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
                         onClick={() => {
-                          
+                          if (mintWrite) mintWrite?.();
                         }}
                       >
-                        Mint
+                        {
+                          (() => {
+                            if (mintIsLoading) return "Minting...";
+                            if (mintIsSuccess) return "Minted!";
+                            if (mintWrite) return "Mint";
+                            return "Loading...";
+                          })()
+                        }
                       </div>
                     </div>
                   ) : (
@@ -420,7 +594,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const { slug } = context.params;
   console.log("slug", slug)
   const res = await fetch(
-    `https://${process.env.NEXT_PUBLIC_PLATFORM_APP_DOMAIN}/api/get-project-by-slug/`,
+    `http://localhost:3000/api/get-project-by-slug/`,
     {
       body: JSON.stringify({slug: slug}),
       method: 'POST'
