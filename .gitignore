@@ -5,19 +5,9 @@
 /frontend/.pnp
 /frontend/.pnp.js
 
-# testing
-/coverage
-
-# storybook
-storybook-static
-
-# cypress
-cypress/screenshots
-cypress/videos
-
 # next.js
-/.next
-/out
+/frontend/.next
+/frontend/out
 
 # next-sitemap
 /frontend/public/robots.txt
@@ -42,6 +32,7 @@ Thumbs.db
 /frontend/yarn-error.log*
 
 # local env files
+/frontend/.env
 /frontend/.env*.local
 
 # local folder

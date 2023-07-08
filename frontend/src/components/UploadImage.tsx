@@ -1,10 +1,18 @@
 import Image from "next/image";
-import { useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 
-
-export default function UploadImage() {
-  const [artworkURL, setArtworkURL] = useState<String>("");
+export default function UploadImage(
+  {
+    artworkURL, 
+    setArtworkURL,
+  }:
+  {
+    artworkURL: string;
+    setArtworkURL: Dispatch<SetStateAction<string>>;
+  }
+) {
+  
 
   const uploadArtwork = async (e?: React.ChangeEvent<HTMLInputElement>) => {
     if (!e) {
@@ -47,7 +55,7 @@ export default function UploadImage() {
       console.error('Upload failed.',  await upload)
     }
   }
-  
+
   return (
     <>
       <label className="font-bold flex justify-center md:justify-start">Artwork</label>
