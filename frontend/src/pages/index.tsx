@@ -77,7 +77,7 @@ const Index = () => {
                     </div>
                     <div className="absolute -right-2 -top-1 flex justify-between flex-col items-end w-full">
                       <div className="h-[60px] md:h-[68px]">
-                        <Image alt="" width="1" height="1" className="h-full w-full rounded-r-[10px]" src={project.artworkurl} />
+                        <Image alt="" width="60" height="60" className="h-full w-full rounded-r-[10px]" src={project.artworkurl} />
                       </div>
                     </div>
                   </div>
