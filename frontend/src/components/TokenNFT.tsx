@@ -30,8 +30,6 @@ export default function TokenNFT(
   const [modalUnstakeIsOpen, setModalUnstakeIsOpen] = useState<boolean>(false);
   const [modalAddFundsIsOpen, setModalAddFundsIsOpen] = useState<boolean>(false);
 
-  const { chain: activeChain } = useNetwork();
-
   const contractCommon = {
     address: contractAddress,
     abi: NFERC721,
@@ -156,7 +154,10 @@ export default function TokenNFT(
 
   return (
           <>
-            <div>
+            <div
+              className="text-center border hover:border-black p-2 rounded-xl cursor-pointer"
+              onClick={() => setModalInfoTokenIsOpen(true)}
+            >
               <Image width={300} height={300} alt={projectName} className="rounded-xl mt-10 mx-auto" src={artworkURL} />
               {projectName} #{tokenId.toString()}
             </div>
@@ -168,7 +169,7 @@ export default function TokenNFT(
               ariaHideApp={false}
               className="z-50"
             >
-              <div className="overflow-hidden">
+              <div className="bg-white overflow-hidden">
                 <div>
                   <div className="my-1 p-0 border rounded-lg">
                     <div className="p-4">
@@ -225,6 +226,7 @@ export default function TokenNFT(
                                 </span>
                                 <button
                                   disabled={!unstakeableAmount?.gt?.(0)}
+                                  className="w-full cursor-pointer text-center text-xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
                                   onClick={() => {
                                     setModalUnstakeIsOpen(true);
                                   }}
@@ -242,6 +244,7 @@ export default function TokenNFT(
                                   Press the button to add more funds to your stake
                                 </span>
                                 <button
+                                  className="w-full cursor-pointer text-center text-xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
                                   onClick={() => {
                                     setModalAddFundsIsOpen(true);
                                   }}
@@ -286,7 +289,29 @@ export default function TokenNFT(
               className="z-50"
             >
               <div className="bg-white p-10">
-                UNSTAKE
+                <div className="h-96 py-20 md:max-w-[500px] mx-auto">
+                  <h2 className="text-sm font-medium text-gray-900 ml-1">
+                      How much to unstake?
+                  </h2>
+                  <input
+                  type="range"
+                  className="form-range
+                      w-full
+                      h-6
+                      p-0
+                      bg-transparent
+                      focus:outline-none focus:ring-0 focus:shadow-none"
+                  min="0"
+                  defaultValue={1}
+                  />
+                  <div className="w-full mt-6 text-center">
+                    <button
+                      className="w-full cursor-pointer text-center text-xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
+                    >
+                      UNSTAKE
+                    </button>
+                  </div>
+                </div>
               </div>
             </Modal>
 
@@ -301,7 +326,27 @@ export default function TokenNFT(
               className="z-50"
             >
               <div className="bg-white p-10">
-                ADD FUNDS
+                <div className="h-96 py-20 md:max-w-[500px] mx-auto">
+                  <h2 className="text-sm font-medium text-gray-900 ml-1">
+                    How much to invest?
+                  </h2>
+                  <input
+                      type="number"
+                      required
+                      step="0.01"
+                      lang="en"
+                      min={0}
+                      defaultValue={1}
+                      className="appearance-none min-w-0 w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-75"
+                  />
+                  <div className="w-full mt-6 text-center">
+                    <button
+                      className="w-full cursor-pointer text-center text-xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
+                    >
+                      ADD FUNDS
+                    </button>
+                  </div>
+                </div>
               </div>
             </Modal>
           </>

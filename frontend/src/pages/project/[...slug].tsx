@@ -49,8 +49,6 @@ const Index = ({
   const [mintInvest, setMintInvest] = useState<number>(0);
   const [tokensOwned, setTokensOwned] = useState<TokensOwned>();
 
-  console.log("tokensOwned", tokensOwned)
-
   const { chain: activeChain } = useNetwork();
   const { address: wallet, isConnected } = useAccount();
   const provider = useProvider();
@@ -293,6 +291,12 @@ const Index = ({
 
 
   const coinSymbol = "XDCX";
+
+  const erc20 = {
+    address: erc20PaymentAddress,
+    decimals: 18,
+    symbol: coinSymbol
+   };
 
   const priceInvest = mintInvest?ethers.utils.parseEther(mintInvest?.toString?.()):undefined;
 
@@ -628,7 +632,6 @@ const Index = ({
             {tokensOwned?.tokens.map((token) => (
                 <div
                   key={token.id.toString()}
-                  className="text-center border hover:border-black p-2 rounded-xl cursor-pointer"
                 >
                   <TokenNFT
                     projectName={project.projectname}
@@ -636,7 +639,8 @@ const Index = ({
                     chainId={activeChain?.id}
                     contractAddress={project.contractaddress}
                     artworkURL={project.artworkurl}
-                    isOwner={true}                  
+                    isOwner={true}
+                    erc20={erc20}    
                   />
                 </div>
               ))}
