@@ -21,7 +21,7 @@ module.exports = withBundleAnalyzer({
   // You can remove `basePath` if you don't need it.
   reactStrictMode: true,
   images: {
-    domains: ["avatars.githubusercontent.com", "raw.githubusercontent.com", "nfnft-app.s3.eu-west-3.amazonaws.com", "xdcx-zeta.vercel.app"],
+    domains: ["camo.githubusercontent.com", "avatars.githubusercontent.com", "raw.githubusercontent.com", "nfnft-app.s3.eu-west-3.amazonaws.com", "xdcx-zeta.vercel.app"],
   },
   eslint: {
     ignoreDuringBuilds: true,
