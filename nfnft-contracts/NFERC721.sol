@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 bytes constant BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 bytes constant BASE64_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-address constant FIN_WITHDRAW_SIGNER = 0x0066600737B44C702056e213BE99a924b52fAF28;
 
 error CollectionSoldOut();
 error MintPriceMustBeGreaterThanZero();
@@ -53,6 +52,7 @@ contract NFERC721 is
     uint32 public withdrawPenaltyTime;
     uint16 public withdrawPenaltyPercentage;
 
+    // To avoid using the implementation, as it is just intented to be used by proxies.
     constructor() {
         _disableInitializers();
     }    
