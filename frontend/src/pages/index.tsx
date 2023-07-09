@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
+import { chains } from './_app';
 
 const Index = () => {
   const [ projects, setProjects]  = useState([]);
@@ -33,8 +34,6 @@ const Index = () => {
       getProjects();
     }
   }, [isConnected, wallet])
-
-  console.log("projects", projects)
 
   return (
     <Main
@@ -69,11 +68,14 @@ const Index = () => {
             <Link key={project.projectslug} href={`/project/${project.projectslug}/`} target="_blank" className="mt-4">
               <div className="relative w-full rounded-lg border border-gray-300 bg-white shadow-sm flex items-center space-x-3 hover:shadow-lg transition duration-150 cursor-pointer my-4">
                 <div className="flex flex-wrap md:flex-nowrap w-full">
-                  <div className="p-3 sm:p-4 flex flex-col-reverse justify-between m-1 w-full relative">
+                  <div className="p-3 sm:p-4 flex flex-col-reverse justify-between m-1 w-full relative flex-grow">
                     <div className="w-full pr-20">
                       <h3 className="text-base md:text-xl font-bold overflow-ellipsis whitespace-nowrap overflow-hidden" title={project.projectname}>
                         {project.projectname}
                       </h3>
+                    </div>
+                    <div className="absolute right-20 bg-yellow-100 font-bold rounded-xl p-1 px-2 text-sm">
+                      {chains.find((item) => (item.id?.toString() === project.chainid))?.name}
                     </div>
                     <div className="absolute -right-2 -top-1 flex justify-between flex-col items-end w-full">
                       <div className="h-[60px] md:h-[68px]">
@@ -88,8 +90,6 @@ const Index = () => {
           </div>
         </div>
       )}
-
-
       </div>
 
       

@@ -6,7 +6,7 @@ import { AppConfig } from '@/utils/AppConfig';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import Link from 'next/link';
-import { erc20ABI, erc721ABI, useAccount, useContractEvent, useContractRead, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useProvider, useWaitForTransaction } from 'wagmi';
+import { erc20ABI, erc721ABI, useAccount, useContractEvent, useContractRead, useContractReads, useContractWrite, useNetwork, usePrepareContractWrite, useProvider, useSwitchNetwork, useWaitForTransaction } from 'wagmi';
 import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import { BigNumber, ethers } from 'ethers';
 import { useEffect, useState } from 'react';
@@ -15,6 +15,8 @@ import Modal from 'react-modal';
 import NFERC721 from '@/constants/NFERC721';
 import TokenNFT from '@/components/TokenNFT';
 import { db } from '@vercel/postgres';
+import { erc20Addresses } from '@/constants/constants';
+import { chains } from '../_app';
 
 type Project = {
   wallet: string
@@ -51,6 +53,7 @@ const Index = ({
   const [tokensOwned, setTokensOwned] = useState<TokensOwned>();
 
   const { chain: activeChain } = useNetwork();
+  const { switchNetwork } =  useSwitchNetwork();
   const { address: wallet, isConnected } = useAccount();
   const provider = useProvider();
 
@@ -62,6 +65,7 @@ const Index = ({
   const contractCommon = {
     address: project.contractaddress,
     abi: NFERC721,
+    chainId: parseInt(project?.chainid),
   }
 
   const { data: contractReadsData, refetch: contractReadsRefetch } = useContractReads({
@@ -296,7 +300,7 @@ const Index = ({
   }, [project.contractaddress, provider, wallet, tokensOwned]);
 
 
-  const coinSymbol = "XDCX";
+  const coinSymbol = erc20Addresses?.[project.chainid]?.symbol ? erc20Addresses?.[project.chainid]?.symbol : "XDCX";
 
   const erc20 = {
     address: erc20PaymentAddress,
@@ -329,7 +333,6 @@ const Index = ({
   useEffect(() => {
     setMintInvest(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()));
   }, [mintPrice]);
-
   
   return (
     <MintingPage
@@ -465,139 +468,147 @@ const Index = ({
               </span>
 
               <div className="flex flex-col justify-center items-center my-12 w-full">
-                {(isConnected && activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.()) ? (
-                    <div className="w-full">
-                      <h2 className="text-lg ml-1 text-center mx-auto text-white font-bold pb-2 pt-4">
-                        How much to invest?
-                      </h2>
-                      <div className="w-full flex relative pb-4">
-                        <input
-                          type="number"
-                          required
-                          step="0.01"
-                          lang="en"
-                          min={parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))}
-                          max={Infinity}
-                          value={mintInvest?.toString?.() === "" ? mintPrice?.toString?.() : mintInvest?.toString?.()}
-                          onChange={(e) => {
-                            let value = parseFloat(e?.target?.value);
-                            if (value >= parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))) {
-                              setMintInvest(value);
-                            }
+                {project?.chainid === activeChain?.id?.toString() ? (
+                  <>
+                    {(isConnected && activeChain?.id?.toString?.() === project?.chainid) ? (
+                      <div className="w-full">
+                        <h2 className="text-lg ml-1 text-center mx-auto text-white font-bold pb-2 pt-4">
+                          How much to invest?
+                        </h2>
+                        <div className="w-full flex relative pb-4">
+                          <input
+                            type="number"
+                            required
+                            step="0.01"
+                            lang="en"
+                            min={parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))}
+                            max={Infinity}
+                            value={mintInvest?.toString?.() === "" ? mintPrice?.toString?.() : mintInvest?.toString?.()}
+                            onChange={(e) => {
+                              let value = parseFloat(e?.target?.value);
+                              if (value >= parseFloat(mintPrice && ethers.utils.formatEther(mintPrice?.toString?.()))) {
+                                setMintInvest(value);
+                              }
+                            }}
+                            className="appearance-none min-w-0 w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-75"
+                            disabled={false}
+                          />
+                          <div className="absolute right-8 pt-0 text-xs md:top-3 md:text-sm"><label>{coinSymbol}</label></div>
+                        </div>
+                        <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
+                          onClick={() => {
+                            if (mintWrite) mintWrite?.();
                           }}
-                          className="appearance-none min-w-0 w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-75"
-                          disabled={false}
-                        />
-                        <div className="absolute right-8 pt-0 text-xs md:top-3 md:text-sm"><label>{coinSymbol}</label></div>
+                        >
+                          {
+                            (() => {
+                              if (mintIsLoading) return "Minting...";
+                              if (mintIsSuccess) return "Minted!";
+                              if (mintWrite) return "Mint";
+                              if (!enoughAllowance) return "Needs allowance";
+                              return "Loading...";
+                            })()
+                          }
+                        </div>
                       </div>
-                      <div className="w-full cursor-pointer text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center"
-                        onClick={() => {
-                          if (mintWrite) mintWrite?.();
+                    ) : (
+                      <ConnectButton.Custom>
+                        {({
+                          account,
+                          chain,
+                          openChainModal,
+                          openConnectModal,
+                          authenticationStatus,
+                          mounted,
+                        }) => {
+                          // Note: If your app doesn't use authentication, you
+                          // can remove all 'authenticationStatus' checks
+                          const ready = mounted && authenticationStatus !== 'loading';
+                          const connected =
+                            ready &&
+                            account &&
+                            chain &&
+                            (!authenticationStatus ||
+                              authenticationStatus === 'authenticated');
+
+                          return (
+                            <div
+                              {...(!ready && {
+                                'aria-hidden': true,
+                                'style': {
+                                  opacity: 0,
+                                  width: '100%',
+                                  pointerEvents: 'none',
+                                  userSelect: 'none',
+                                },
+                              })}
+                              className="w-full"
+                            >
+                              {(() => {
+                                if (!connected) {
+                                  return (
+                                    <button onClick={openConnectModal} type="button" className="w-full text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center">
+                                      Connect Wallet
+                                    </button>
+                                  );
+                                }
+
+                                if (chain.unsupported) {
+                                  return (
+                                    <button onClick={openChainModal} type="button" className="bg-red-500 w-full text-center text-3xl p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] justify-center font-bold text-white px-4 flex items-center">
+                                      Wrong network
+                                      <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
+                                    </button>
+                                  );
+                                }
+
+                                return (
+                                  <div style={{ display: 'flex', gap: 12 }}>
+                                    <button
+                                      onClick={openChainModal}
+                                      style={{ display: 'flex', alignItems: 'center' }}
+                                      type="button"
+                                      className="p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-gray-800 px-4 flex items-center"
+                                    >
+                                      {chain.hasIcon && (
+                                        <div
+                                          style={{
+                                            background: chain.iconBackground,
+                                            width: 12,
+                                            height: 12,
+                                            borderRadius: 999,
+                                            overflow: 'hidden',
+                                            marginRight: 4,
+                                          }}
+                                        >
+                                          {chain.iconUrl && (
+                                            <Image
+                                              alt={chain.name ?? 'Chain icon'}
+                                              src={chain.iconUrl}
+                                              width={12}
+                                              height={12}
+                                              style={{ width: 12, height: 12 }}
+                                            />
+                                          )}
+                                        </div>
+                                      )}
+                                      {chain.name}
+                                      <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
+                                    </button>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          );
                         }}
-                      >
-                        {
-                          (() => {
-                            if (mintIsLoading) return "Minting...";
-                            if (mintIsSuccess) return "Minted!";
-                            if (mintWrite) return "Mint";
-                            if (!enoughAllowance) return "Needs allowance";
-                            return "Loading...";
-                          })()
-                        }
-                      </div>
-                    </div>
-                  ) : (
-                    <ConnectButton.Custom>
-                      {({
-                        account,
-                        chain,
-                        openChainModal,
-                        openConnectModal,
-                        authenticationStatus,
-                        mounted,
-                      }) => {
-                        // Note: If your app doesn't use authentication, you
-                        // can remove all 'authenticationStatus' checks
-                        const ready = mounted && authenticationStatus !== 'loading';
-                        const connected =
-                          ready &&
-                          account &&
-                          chain &&
-                          (!authenticationStatus ||
-                            authenticationStatus === 'authenticated');
-
-                        return (
-                          <div
-                            {...(!ready && {
-                              'aria-hidden': true,
-                              'style': {
-                                opacity: 0,
-                                width: '100%',
-                                pointerEvents: 'none',
-                                userSelect: 'none',
-                              },
-                            })}
-                            className="w-full"
-                          >
-                            {(() => {
-                              if (!connected) {
-                                return (
-                                  <button onClick={openConnectModal} type="button" className="w-full text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center">
-                                    Connect Wallet
-                                  </button>
-                                );
-                              }
-
-                              if (chain.unsupported) {
-                                return (
-                                  <button onClick={openChainModal} type="button" className="bg-red-500 w-full text-center text-3xl p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] justify-center font-bold text-white px-4 flex items-center">
-                                    Wrong network
-                                    <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
-                                  </button>
-                                );
-                              }
-
-                              return (
-                                <div style={{ display: 'flex', gap: 12 }}>
-                                  <button
-                                    onClick={openChainModal}
-                                    style={{ display: 'flex', alignItems: 'center' }}
-                                    type="button"
-                                    className="p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] text-base font-bold text-gray-800 px-4 flex items-center"
-                                  >
-                                    {chain.hasIcon && (
-                                      <div
-                                        style={{
-                                          background: chain.iconBackground,
-                                          width: 12,
-                                          height: 12,
-                                          borderRadius: 999,
-                                          overflow: 'hidden',
-                                          marginRight: 4,
-                                        }}
-                                      >
-                                        {chain.iconUrl && (
-                                          <Image
-                                            alt={chain.name ?? 'Chain icon'}
-                                            src={chain.iconUrl}
-                                            width={12}
-                                            height={12}
-                                            style={{ width: 12, height: 12 }}
-                                          />
-                                        )}
-                                      </div>
-                                    )}
-                                    {chain.name}
-                                    <svg className="ml-1.5" fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
-                                  </button>
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        );
-                      }}
-                    </ConnectButton.Custom>
-                  )}
+                      </ConnectButton.Custom>
+                    )}
+                  </>
+                ) : (
+                  <button onClick={() => switchNetwork?.(parseInt(project?.chainid))} type="button" className="w-full text-center text-3xl bg-blue-600 p-2 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.1)] font-bold text-white px-4 flex items-center justify-center">
+                    Switch to {chains.find((item) => (item.id?.toString() === project.chainid))?.name}
+                  </button>
+                )}
               </div>
             </div>
           </div>
