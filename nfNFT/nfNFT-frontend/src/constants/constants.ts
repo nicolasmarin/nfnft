@@ -23,14 +23,14 @@ export const erc20Addresses:erc20AddressesType = {
         },
     '10200':
         {
-            name: "CHIADOX",
-            symbol: "CHIADOX",
+            name: "GNO",
+            symbol: "GNO",
             address: "0x19C653Da7c37c66208fbfbE8908A5051B57b4C70"
         },
     '534353':
         {
-            name: "SCROLLX",
-            symbol: "SCROLLX",
+            name: "rETH",
+            symbol: "rETH",
             address: "0x0308d0fD85913A20e7D3a013E10Ef1b09848b50c"
         },
 }
