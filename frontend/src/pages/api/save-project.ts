@@ -47,7 +47,7 @@ export default async function handler(
                                       (
                                         ${wallet},
                                         ${contractAddress},
-                                        ${chainId}
+                                        ${chainId},
                                         ${projectName},
                                         ${projectSlug},
                                         ${projectSymbol},
