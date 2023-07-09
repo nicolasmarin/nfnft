@@ -69,10 +69,13 @@ contract NFERC721 is
     ) public initializer {
         __ERC721_init(tokenName, tokenSymbol);
 
+        // We need to set the owner here, since the msg.sender will be a contract and not the owner.
         _transferOwnership(owner);
 
+        // Token URI endpoint basepath for the metadata.
         _tokenUriEndpoint = tokenUriEndpoint;
 
+        // Finally the checks
         if (iErc20PaymentAddress == address(0)) revert InvalidPaymentAddress();
         erc20PaymentAddress = iErc20PaymentAddress;
         if (integers[4] > 365 days) revert WithdrawPenaltyTimeTooHigh();
@@ -97,38 +100,29 @@ contract NFERC721 is
 
     }
 
-    function exists(uint256 tokenId) public view returns (bool)
-    {
-        return _exists(tokenId);
-    }
-
     function _mint(bool firstMinting, address to, uint256 tokenId, uint256 mintPricePerToken)
         internal
     {
-
+        // To keep track of the minting date
         mintingDate[tokenId] = block.timestamp;
 
+        // The owner fee, which is deducted from the mint price
         uint ownerFee = (mintRoyaltyFee *  _mintPrice) / 100_00;
         uint mintPriceMinusFee = mintPricePerToken - ownerFee;
 
         minimumMintFeeWhenMinting[tokenId] = _mintPrice - ownerFee;
-
         rawPendingToWithdraw[owner()] += ownerFee;
 
         uint totalAmountWithRewards = getTotalAmountWithRewards();
-
         uint currentTokenStakes;
 
         if (firstMinting || totalStakedRaw == 0 || totalAmountOfStakes == 0 || totalAmountWithRewards == 0) {
-
             totalAmountOfStakes = 0;
             totalStakedRaw = 0;
             currentTokenStakes = mintPriceMinusFee;
         } else {
-
             uint newTotalStakes = (totalAmountWithRewards + mintPriceMinusFee) * totalAmountOfStakes / totalAmountWithRewards;
             currentTokenStakes = newTotalStakes - totalAmountOfStakes;
-
         }
 
         totalAmountOfStakes += currentTokenStakes;
@@ -144,31 +138,22 @@ contract NFERC721 is
         require(_exists(tokenId), "ERC721: burn of nonexistent token");
 
         uint totalAmountStaked = getTotalAmountWithRewards();
-
         uint unburnedTokens = collectionSize - burnedTokens;
-
         uint relativeStakes = amountOfStakes[tokenId];
 
         if (unburnedTokens <= 1) {
-
             amountToWithdraw = totalAmountStaked;
         } else {
-
             amountToWithdraw = (relativeStakes * totalAmountStaked) / totalAmountOfStakes;
-
             uint unburnedPercentagePenalty = (unburnedTokens * 100_00) / collectionSize;
             assert(unburnedPercentagePenalty <= 100_00);
-
             uint penaltyPercentage = unburnedPercentagePenalty;
-
             uint elapsed = block.timestamp - mintingDate[tokenId];
 
             if (elapsed < withdrawPenaltyTime) {
-
                 uint remainingTime = withdrawPenaltyTime - elapsed;
                 uint remainingTimePercentagePenalty = (remainingTime * 100_00) / withdrawPenaltyTime;
                 assert(remainingTimePercentagePenalty <= 100_00);
-
                 penaltyPercentage += remainingTimePercentagePenalty;
             }
 
@@ -182,40 +167,33 @@ contract NFERC721 is
     }
 
     modifier onlyNFTOwner(uint256 tokenId) {
-        require(msg.sender == ownerOf(tokenId), "ERC721Fi: Caller must be owner");
+        require(msg.sender == ownerOf(tokenId), "Caller must be owner");
         _;
     }
 
     function burnToWithdraw(uint256 tokenId) public onlyNFTOwner(tokenId) {
-
         uint amountToWithdraw = getBurnableAmount(tokenId);
-
         _burn(tokenId);
         burnedTokens++;
-
         totalAmountOfStakes -= amountOfStakes[tokenId];
         totalStakedRaw -= stakedRaw[tokenId];
         delete amountOfStakes[tokenId];
         delete stakedRaw[tokenId];
-
         _send(msg.sender, amountToWithdraw);
     }
 
     function totalPendingToWithdraw(address owner) public view returns (uint256 pendingToWithdraw, bool totallyUnbonded) {
         pendingToWithdraw = rawPendingToWithdraw[owner];
         totallyUnbonded = true;
-
     }
 
     function withdrawPending() public {
-
         uint amountToWithdraw = rawPendingToWithdraw[msg.sender];
         delete(rawPendingToWithdraw[msg.sender]);
 
         if (amountToWithdraw > 0) {
             _send(msg.sender, amountToWithdraw);
         } else {
-
             revert("No pending amount to withdraw");
         }
 
@@ -224,7 +202,6 @@ contract NFERC721 is
     }
 
     function getTotalAmountWithRewards() public view returns (uint256 amount) {
-
         return IERC20Upgradeable(erc20PaymentAddress).balanceOf(address(this));
     }
 
@@ -242,7 +219,6 @@ contract NFERC721 is
     function _unstakeableAmountAux(uint256 tokenId, uint256 totalValueBefore) private view returns (uint256 unstakeable, uint256 tokenValueBefore) {
 
         uint256 unburnedTokens = collectionSize - burnedTokens;
-
         if (unburnedTokens <= 1) {
             tokenValueBefore = totalValueBefore;
         } else {
@@ -258,11 +234,9 @@ contract NFERC721 is
         require(amountToDecrease > 0, "Decrease amount must be higher than 0");
         uint256 totalValueBefore = getTotalAmountWithRewards();
         (uint256 unstakeable, uint256 tokenValueBefore) = _unstakeableAmountAux(tokenId, totalValueBefore);
-
         require(amountToDecrease <= unstakeable, "Decrease amount is higher than unstakeable amount");
 
         uint256 totalValueAfter = totalValueBefore - amountToDecrease;
-
         uint256 tokenValueAfter = tokenValueBefore - amountToDecrease;
         assert(tokenValueAfter >= minimumMintFeeWhenMinting[tokenId]);
 
@@ -284,12 +258,11 @@ contract NFERC721 is
 
     function _send(address to, uint256 amount) private {
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(erc20PaymentAddress), to, amount);
-
     }
 
     function increaseStaking(uint256 tokenId, uint256 amountToIncrease) payable external {
         require(amountToIncrease > 0, "Increase amount must be higher than 0");
-        require(_exists(tokenId), "ERC721: increase of nonexistent token");
+        require(_exists(tokenId), "Increase of nonexistent token");
         uint256 totalValueBefore = getTotalAmountWithRewards();
         _requirePayment(amountToIncrease, 1);
 
@@ -301,22 +274,21 @@ contract NFERC721 is
         uint256 differenceOfStakes = newAmountOfStakes - totalAmountOfStakes;
         amountOfStakes[tokenId] += differenceOfStakes;
         totalAmountOfStakes += differenceOfStakes;
-
     }
 
-    /// @notice A distinct Uniform Resource Identifier (URI) for a given asset.
-    /// @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
-    ///  3986. The URI may point to a JSON file that conforms to the "ERC721
-    ///  Metadata JSON Schema".
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        _requireMinted(tokenId);
-        return string(abi.encodePacked(_tokenUriEndpoint, StringsUpgradeable.toString(block.chainid), "/", StringsUpgradeable.toString(tokenId), "/", StringsUpgradeable.toString(uint(uint160(address(this))))));
-    }
+
+    function _requirePayment(uint256 p_mintPrice, uint256 amount) internal {
+
+        if (p_mintPrice == 0) return;
+        uint256 totalAmount = p_mintPrice * amount;
+
+        SafeERC20Upgradeable.safeTransferFrom(
+            IERC20Upgradeable(erc20PaymentAddress),
+            msg.sender,
+            address(this),
+            totalAmount
+        );
+    }    
 
     function mint(uint256 price) external payable {
         require(price >= _mintPrice, "Price lower than mintPrice");
@@ -331,7 +303,7 @@ contract NFERC721 is
     /// @notice Mints `amount` NFTs to the caller (msg.sender). Requires `minting type` to be `sequential` and the `mintPrice` to be send (if `Native payment`) or approved (if `ERC-20` payment).
     /// @param amount The number of NFTs to mint
     function mint(uint256 amount, uint256 price) external payable {
-        require(price >= _mintPrice, "price lower than mintPrice");
+        require(price >= _mintPrice, "Price lower than mintPrice");
         _mintSequentialWithChecks(msg.sender, amount, price);
         _requirePayment(price, amount);
     }
@@ -358,6 +330,22 @@ contract NFERC721 is
         return _mintPrice;
     }
 
+
+    /// @notice A distinct Uniform Resource Identifier (URI) for a given asset.
+    /// @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
+    ///  3986. The URI may point to a JSON file that conforms to the "ERC721
+    ///  Metadata JSON Schema".
+    function tokenURI(uint256 tokenId)
+        public
+        view
+        override
+        returns (string memory)
+    {
+        _requireMinted(tokenId);
+        return string(abi.encodePacked(_tokenUriEndpoint, StringsUpgradeable.toString(block.chainid), "/", StringsUpgradeable.toString(tokenId), "/", StringsUpgradeable.toString(uint(uint160(address(this))))));
+    }
+
+
     /// @notice Returns the current total supply.
     /// @return Current total supply.
     function totalSupply() external view returns (uint256) {
@@ -371,17 +359,5 @@ contract NFERC721 is
         return (address(this), uint256((salePrice * royaltyFee) / 100_00));
     }
 
-    function _requirePayment(uint256 p_mintPrice, uint256 amount) internal {
-
-        if (p_mintPrice == 0) return;
-        uint256 totalAmount = p_mintPrice * amount;
-
-        SafeERC20Upgradeable.safeTransferFrom(
-            IERC20Upgradeable(erc20PaymentAddress),
-            msg.sender,
-            address(this),
-            totalAmount
-        );
-    }
 
 }

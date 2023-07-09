@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./NFERC721.sol";
 
+// Factory contract to create new NFT collections
+// Save gas as we just deploy proxies instead of the whole contract every time.
 contract ContractsFactory is Ownable {
     address immutable IMPLEMENTATION_ADDRESS;
 
@@ -12,11 +14,23 @@ contract ContractsFactory is Ownable {
         IMPLEMENTATION_ADDRESS = implementation;
     }
 
+    // This is used by the UI to predict the address of the new collection
+    function predictDeterministicAddress(
+        bytes32 salt
+    ) public view returns (address) {
+        return
+            Clones.predictDeterministicAddress(
+                IMPLEMENTATION_ADDRESS,
+                salt
+            );
+    }
+
+
     function createCollection(
         string calldata tokenName,
         string calldata tokenSymbol,
         uint256 mintPrice,
-        address iErc20PaymentAddress,
+        address erc20PaymentAddress,
         bytes32 salt,
         uint32[] calldata integers,
         string calldata tokenUriEndpoint
@@ -30,7 +44,7 @@ contract ContractsFactory is Ownable {
             tokenName,
             tokenSymbol,
             mintPrice,
-            iErc20PaymentAddress,
+            erc20PaymentAddress,
             integers,
             tokenUriEndpoint,
             msg.sender
@@ -38,14 +52,6 @@ contract ContractsFactory is Ownable {
 
     }
 
-    function predictDeterministicAddress(
-        bytes32 salt
-    ) public view returns (address) {
-        return
-            Clones.predictDeterministicAddress(
-                IMPLEMENTATION_ADDRESS,
-                salt
-            );
-    }
+
 
 }
