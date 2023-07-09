@@ -129,7 +129,7 @@ const Index = ({
       },
     ],
     watch: false,
-    enabled: isConnected && activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.(),    
+    enabled: true,    
   });
 
   const mintPrice:ethers.BigNumber | undefined = contractReadsData?contractReadsData?.[0]?contractReadsData?.[0]:undefined:undefined;
@@ -230,7 +230,7 @@ const Index = ({
       let allEvents;
       // console.log("manageEvents: before");
       let creationBlockNumber = undefined;
-      if (activeChain?.id?.toString?.() === process.env.NEXT_PUBLIC_PLATFORM_CHAINID?.toString?.()) {
+      if (activeChain?.id?.toString?.() === projet.chainid?.toString?.()) {
         await provider?.getBlockNumber().then((blockNumber) => {
           // console.log("manageEvents: blockNumber ", blockNumber );
           // Este RPC sólo soporta los últimos 10.000 bloques.
