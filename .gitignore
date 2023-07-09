@@ -4,6 +4,60 @@
 .env
 
 # dependencies
+/nfNFT/nfNFT-frontend/node_modules
+/xdcX/xdcX-frontendnode_modules
+/nfNFT/nfNFT-frontend/.pnp
+/nfNFT/nfNFT-frontend/.pnp.js
+
+# next.js
+/nfNFT/nfNFT-frontend/.next
+/nfNFT/nfNFT-frontend/out
+/xdcX/xdcX-frontend/.next
+/xdcX/xdcX-frontendout
+
+# next-sitemap
+/nfNFT/nfNFT-frontend/public/robots.txt
+/nfNFT/nfNFT-frontend/public/sitemap.xml
+/nfNFT/nfNFT-frontend/public/sitemap-*.xml
+
+/xdcX/xdcX-frontendpublic/robots.txt
+/xdcX/xdcX-frontendpublic/sitemap.xml
+/xdcX/xdcX-frontendpublic/sitemap-*.xml
+
+# cache
+.swc/
+
+# production
+/nfNFT/nfNFT-frontend/build
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+/nfNFT/nfNFT-frontend/npm-debug.log*
+/nfNFT/nfNFT-frontend/pnpm-debug.log*
+/nfNFT/nfNFT-frontend/yarn-debug.log*
+/nfNFT/nfNFT-frontend/yarn-error.log*
+
+# local env files
+/nfNFT/nfNFT-frontend/.env
+/nfNFT/nfNFT-frontend/.env*.local
+
+# local folder
+/nfNFT/nfNFT-frontend/local
+
+# vercel
+.vercel
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# ENV files
+.env
+
+# dependencies
 /frontend/node_modules
 /LSD/frontend/node_modules
 /frontend/.pnp
