@@ -28,3 +28,7 @@ xdcX provide several advantages, including:
 4. **Enhanced Returns:** xdcX provides the potential for additional returns beyond staking rewards. Token holders can leverage the liquidity of their derivative tokens to participate in various DeFi strategies that generate yield or benefit from the appreciation of the underlying assets.
 
 Overall, Liquid Staking Derivatives offer a bridge between the benefits of staking and the liquidity and flexibility of traditional financial markets. They empower users to unlock the value of staked assets, engage in DeFi opportunities, and enjoy the advantages of liquidity and fungibility while still earning staking rewards.
+
+## EthBarcelona wallet
+
+0x217D4992a8e4B45CB02493A6F9F39Ec1416C9781
